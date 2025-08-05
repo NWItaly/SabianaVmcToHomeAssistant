@@ -19,11 +19,13 @@ text_sensor:
     name: "Blk8 - Time"
     id: blk8_time
     icon: mdi:calendar-week
+    entity_category: diagnostic
 
   - platform: template
     name: "Blk8 - Day"
     id: blk8_day
     icon: mdi:calendar-today
+    entity_category: diagnostic
 
 sensor:
   - platform: modbus_controller

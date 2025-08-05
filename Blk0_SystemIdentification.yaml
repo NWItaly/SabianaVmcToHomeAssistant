@@ -21,12 +21,38 @@
 #   - Helper functions like format_version_from_modbus are assumed to be defined elsewhere.
 # -----------------------------------------------------------------------------
 
+text_sensor:
+  - platform: template
+    name: "Blk0 - Serial Number"
+    id: blk0_serial_number
+    icon: "mdi:barcode"
+    entity_category: diagnostic
+
+  - platform: template
+    name: "Blk0 - Controller Model"
+    id: blk0_controller_model
+    icon: "mdi:chip"
+    entity_category: diagnostic
+    
+  - platform: template
+    name: "Blk0 - Firmware Release"
+    id: blk0_firmware_release
+    icon: "mdi:file-code"
+    entity_category: diagnostic
+    
+  - platform: template
+    name: "Blk0 - T-EP Release"
+    id: blk0_tep_firmware_release
+    icon: "mdi:file-code"
+    entity_category: diagnostic
+    
 sensor: 
       
   - platform: template
     name: "Blk0 - Protocol Release"
     id: vmc_protocol_release
     icon: "mdi:protocol"
+    entity_category: diagnostic
 
   - platform: modbus_controller
     modbus_controller_id: sabiana_vmc
@@ -94,24 +120,3 @@ sensor:
       ESP_LOGD("modbus", "T-PE Firmware Release aggiornato: %.2f", tep_firmware_release);
 
       return 1; // Valore dummy per questo sensore
-
-text_sensor:
-  - platform: template
-    name: "Blk0 - Serial Number"
-    id: blk0_serial_number
-    icon: "mdi:barcode"
-
-  - platform: template
-    name: "Blk0 - Controller Model"
-    id: blk0_controller_model
-    icon: "mdi:chip"
-    
-  - platform: template
-    name: "Blk0 - Firmware Release"
-    id: blk0_firmware_release
-    icon: "mdi:file-code"
-    
-  - platform: template
-    name: "Blk0 - T-EP Release"
-    id: blk0_tep_firmware_release
-    icon: "mdi:file-code"

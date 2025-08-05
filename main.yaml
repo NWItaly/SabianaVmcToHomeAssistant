@@ -5,7 +5,7 @@ packages:
   - !include Blk3_Commands.yaml
   - !include Blk4_UserTimerProgram.yaml
   - !include Blk8_TimeAndDay.yaml
-  # - !include Climate.yaml
+  - !include Climate.yaml
 
 esphome:
   name: esphome-web-230550
