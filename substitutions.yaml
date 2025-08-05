@@ -1,0 +1,8 @@
+substitutions:
+  device_name: "vmc-sabiana"
+  friendly_name: "VMC Sabiana"
+  device_description: "VMC Sabiana ENY-SP-180"
+
+  logger: "INFO"
+
+  modbus_address: 0x01  # Indirizzo della VMC (solo pin 1 su ON)

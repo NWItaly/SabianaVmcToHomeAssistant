@@ -1,0 +1,8 @@
+# -- Logger per il debug --
+logger:
+  level: ${logger}
+  baud_rate: 115200
+  logs:
+    modbus_controller: ${logger}
+    modbus: ${logger}
+    uart: ${logger}

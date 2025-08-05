@@ -1,0 +1,79 @@
+
+# -- Chip di espansione I/O TCA99554PWR per relè --
+pca9554:
+  - id: pca9554_hub
+    address: 0x20  # Indirizzo I2C del chip TCA9554 (da verificare)
+
+# -- Configurazione Relè tramite chip TCA9554 --
+switch:
+  - platform: gpio
+    pin:
+      pca9554: pca9554_hub
+      number: 0
+      mode: OUTPUT
+    name: "Relè 1"
+    id: relay_1
+    restore_mode: RESTORE_DEFAULT_OFF
+
+  - platform: gpio
+    pin:
+      pca9554: pca9554_hub
+      number: 1
+      mode: OUTPUT
+    name: "Relè 2"
+    id: relay_2
+    restore_mode: RESTORE_DEFAULT_OFF
+
+  - platform: gpio
+    pin:
+      pca9554: pca9554_hub
+      number: 2
+      mode: OUTPUT
+    name: "Relè 3"
+    id: relay_3
+    restore_mode: RESTORE_DEFAULT_OFF
+
+  - platform: gpio
+    pin:
+      pca9554: pca9554_hub
+      number: 3
+      mode: OUTPUT
+    name: "Relè 4"
+    id: relay_4
+    restore_mode: RESTORE_DEFAULT_OFF
+
+  - platform: gpio
+    pin:
+      pca9554: pca9554_hub
+      number: 4
+      mode: OUTPUT
+    name: "Relè 5"
+    id: relay_5
+    restore_mode: RESTORE_DEFAULT_OFF
+
+  - platform: gpio
+    pin:
+      pca9554: pca9554_hub
+      number: 5
+      mode: OUTPUT
+    name: "Relè 6"
+    id: relay_6
+    restore_mode: RESTORE_DEFAULT_OFF
+
+  - platform: gpio
+    pin:
+      pca9554: pca9554_hub
+      number: 6
+      mode: OUTPUT
+    name: "Relè 7"
+    id: relay_7
+    restore_mode: RESTORE_DEFAULT_OFF
+
+  - platform: gpio
+    pin:
+      pca9554: pca9554_hub
+      number: 7
+      mode: OUTPUT
+    name: "Relè 8"
+    id: relay_8
+    restore_mode: RESTORE_DEFAULT_OFF

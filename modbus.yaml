@@ -1,0 +1,24 @@
+uart:
+  - id: modbus_uart
+    tx_pin: GPIO17
+    rx_pin: GPIO18
+    baud_rate: 9600
+    parity: NONE
+    stop_bits: 1
+    data_bits: 8
+    debug:
+      direction: BOTH
+      dummy_receiver: false
+
+# Configurazione Modbus protocol
+modbus:
+  - id: modbus_sabiana
+    uart_id: modbus_uart
+    send_wait_time: 200ms
+
+# Configurazione del controller
+modbus_controller:
+  - id: sabiana_vmc
+    modbus_id: modbus_sabiana
+    address: ${modbus_address}
+    update_interval: 30s

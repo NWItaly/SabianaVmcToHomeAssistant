@@ -1,0 +1,19 @@
+# -- Pulsanti di controllo --
+button:
+
+  - platform: template
+    name: "Buzzer - Allarme"
+    on_press:
+      then:
+        - rtttl.play: "alarm:d=16,o=5,b=100:c6,e6,g6,c7"
+
+# -- Configurazione Output --
+output:
+  - platform: ledc
+    pin: GPIO46
+    id: buzzer_output
+    frequency: 1000Hz
+
+# -- Configurazione RTTTL per melodie --
+rtttl:
+  output: buzzer_output
