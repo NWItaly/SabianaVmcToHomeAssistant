@@ -68,12 +68,25 @@ Di contro la scrittura dei registri comporta che alcune entity sono duplicate.
 ## Personalizzazione
 Per il mio utilizzo ho alimentato la scheda con cavo ethernet POE. Se si preferisce è possibile utilizzare il WiFi ed è sufficiente commentare la sezione `ethernet` e togliere il commento a `wifi`.
 
-**N.B.**: Ricordarsi di creare il file `secrets.yaml` con i parametri:
+
+## Setup Secrets
+Ricordarsi di creare il file `secrets.yaml` con i parametri:
 - wifi_ssid
 - wifi_password
 - fallback_password
 - ota_password
 - api_encryption_key
+
+Per semplicità ho creato degli script che aiutano alla generazione del file.
+
+### Metodo 1: Python
+```bash
+python3 secrets_setup.py
+```
+### Metodo 2: Windows (Doppio click)
+```bash
+secrets_setup.bat
+```
 
 ### Il mio ambiente di sviluppo
 - Visual Studio Code
