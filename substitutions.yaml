@@ -5,4 +5,4 @@ substitutions:
 
   logger: "INFO"
 
-  modbus_address: 0x01  # Indirizzo della VMC (solo pin 1 su ON)
+  modbus_address: "0x01"  # Indirizzo della VMC (solo pin 1 su ON)

@@ -26,24 +26,24 @@ Di contro la scrittura dei registri comporta che alcune entity sono duplicate.
 - Uptime
 
 ## Struttura del progetto
-- **substitutions.yaml**: Variabili modificabili alla bisogna
-- **main.yaml**: Configurazione principale hardware, networking, automazioni di base
-- modbus.yaml: Configurazione del protocollo ModBus
-- config/Blk0_SystemIdentification.yaml: Identificazione sistema e firmware VMC
-- config/Blk1_MachineState.yaml: Stato macchina, sonde, allarmi, modalità
-- config/Blk2_MachineParameters.yaml: Parametri macchina, limiti, offset, setpoint
-- config/Blk3_Commands.yaml: Comandi e stato comandi VMC
-- config/Blk4_UserTimerProgram.yaml: Programmi personalizzati dall'utente (da fare)
-- config/Blk8_TimeAndDay.yaml: Lettura orario e giorno dalla VMC
-- climate.yaml: Integrazione clima e controlli avanzati (in sviluppo)
-- modbus_helpers.h: Funzioni di supporto per parsing dati Modbus
-- ethernet.yaml/wifi.yaml: Configurazione metodo di connessione alla rete
-- buzzer.yaml: Modulo per gestire un piccolo altoparlante (disabilitato di default)
-- led.yaml: Modulo per gestire il led di stato presente sulla scheda
-- logger.yaml: Configurazione dei log (disabilitare se non necessario)
-- relais.yaml: Modulo per gestire i relè (disabilitato di default)
-- digital_input.yaml: Modulo per gestire gli input digitali (disabilitato di default)
-- rtc.yaml: Modulo per sincronizzare l'ora con HA
+- **[substitutions.yaml](../substitutions.yaml)**: Variabili modificabili alla bisogna
+- **[main.yaml](../main.yaml)**: Configurazione principale hardware, networking, automazioni di base
+- [config/Blk0_SystemIdentification.yaml](../blocks/Blk0_SystemIdentification.yaml): Identificazione sistema e firmware VMC
+- [blocks/Blk1_MachineState.yaml](../blocks/Blk1_MachineState.yaml.yaml): Stato macchina, sonde, allarmi, modalità
+- [blocks/Blk2_MachineParameters.yaml](../blocks/Blk2_MachineParameters.yaml.yaml): Parametri macchina, limiti, offset, setpoint
+- [blocks/Blk3_Commands.yaml](../blocks/Blk3_Commands.yaml.yaml): Comandi e stato comandi VMC
+- [blocks/Blk4_UserTimerProgram.yaml](../blocks/Blk4_UserTimerProgram.yaml.yaml): Programmi personalizzati dall'utente (da fare)
+- [blocks/Blk8_TimeAndDay.yaml](../blocks/Blk8_TimeAndDay.yaml.yaml): Lettura orario e giorno dalla VMC
+- [climate.yaml](../climate.yaml): Integrazione clima e controlli avanzati (in sviluppo)
+- [modules/modbus_helpers.h](../modbus_helpers.h): Funzioni di supporto per parsing dati Modbus
+- [modules/ethernet.yaml](../modules/ethernet.yaml)/[wifi.yaml](../modules/wifi.yaml): Configurazione metodo di connessione alla rete
+- [modules/buzzer.yaml](../modules/buzzer.yaml): Modulo per gestire un piccolo altoparlante (disabilitato di default)
+- [modules/digital_input.yaml](../modules/digital_input.yaml): Modulo per gestire gli input digitali (disabilitato di default)
+- [modules/led.yaml](../modules/led.yaml): Modulo per gestire il led di stato presente sulla scheda
+- [modules/logger.yaml](../modules/logger.yaml): Configurazione dei log (disabilitare se non necessario)
+- [modules/modbus.yaml](../modules/modbus.yaml): Configurazione del protocollo ModBus
+- [modules/relais.yaml](../modules/relais.yaml): Modulo per gestire i relè (disabilitato di default)
+- [modules/rtc.yaml](../modules/rtc.yaml): Modulo per sincronizzare l'ora con HA
 
 Per personalizzare il progetto è sufficiente modificare i file indicati in grassetto.
 

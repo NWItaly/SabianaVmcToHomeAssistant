@@ -13,9 +13,9 @@ l'automazione locale.
 - Visualizzazione di stato, allarmi, timer, parametri macchina e identificazione sistema
 
 ## 📚 Guide dettagliate
-- 📖 [Guida all'utilizzo](config/INSTALLATION.md)
-- 🔧 [Hardware](config/HARDWARE_GUIDE.md)
-- ⚙️ [Per sviluppatori](config/TECHNICAL_DETAILS.md)
+- 📖 [Guida all'utilizzo](docs/INSTALLATION.md)
+- 🔧 [Hardware](docs/HARDWARE_GUIDE.md)
+- ⚙️ [Per sviluppatori](docs/TECHNICAL_DETAILS.md)
 
 ## Licenza d'uso
 Questo software è fornito "così com'è", senza alcuna garanzia espressa o implicita.
@@ -41,7 +41,6 @@ I prossimi sviluppi sono (non ordinati):
 ## 💬 Supporto
 
 - 🐛 **Bug o problemi?** [Apri un Issue](../../issues)
-- 💡 **Domande?** [Discussioni](../../discussions)  
 - 📧 **Altro?** Contatta @NWItaly
 
 ---

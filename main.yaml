@@ -1,21 +1,21 @@
 packages:
   - !include substitutions.yaml
-  - !include logger.yaml # Disabilitare dopo aver provato per un certo periodo che tutto funzioni
-  # - !include wifi.yaml # Disabilitato per ora, utilizzo ethernet
-  - !include ethernet.yaml # Configurazione Ethernet W5500
-  - !include modbus.yaml # Fondamentale per comunicare con il dispositivo tramite ModBus
+  - !include modules/logger.yaml # Disabilitare dopo aver provato per un certo periodo che tutto funzioni
+  # - !include modules/wifi.yaml # Disabilitato per ora, utilizzo ethernet
+  - !include modules/ethernet.yaml # Configurazione Ethernet W5500
+  - !include modules/modbus.yaml # Fondamentale per comunicare con il dispositivo tramite ModBus
   - !include blocks/Blk0_SystemIdentification.yaml
   - !include blocks/Blk1_MachineState.yaml
   - !include blocks/Blk2_MachineParameters.yaml
   - !include blocks/Blk3_Commands.yaml
   - !include blocks/Blk4_UserTimerProgram.yaml
   - !include blocks/Blk8_TimeAndDay.yaml
-  # - !include climate.yaml # Disattivato perché attualmente poco personalizzabile
-  # - !include buzzer.yaml # Abilitare in caso di utilizzo del buzzer
-  # - !include digital_input.yaml # Abilitare in caso di utilizzo di ingressi digitali
-  # - !include led.yaml # Abilitare in caso di utilizzo del led di stato  
-  # - !include relais.yaml # Abilitare in caso di utilizzo dei relè
-  - !include rtc.yaml # Abilitare in caso si voglia utilizzare il chip RTC
+  # - !include modules/climate.yaml # Disattivato perché attualmente poco personalizzabile
+  # - !include modules/buzzer.yaml # Abilitare in caso di utilizzo del buzzer
+  # - !include modules/digital_input.yaml # Abilitare in caso di utilizzo di ingressi digitali
+  # - !include modules/led.yaml # Abilitare in caso di utilizzo del led di stato  
+  # - !include modules/relais.yaml # Abilitare in caso di utilizzo dei relè
+  - !include modules/rtc.yaml # Abilitare in caso si voglia utilizzare il chip RTC
 
 esphome:
   name: ${device_name}

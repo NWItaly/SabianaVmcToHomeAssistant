@@ -21,11 +21,11 @@ Ricordarsi di creare il file `secrets.yaml` con i parametri:
 
 Per semplicità ho creato degli script che aiutano alla generazione del file.
 
-### Metodo 1: Python
+### Metodo 1: [Python](../scripts/secrets_setup.py)
 ```bash
 python3 secrets_setup.py
 ```
-### Metodo 2: Windows (Doppio click)
+### Metodo 2: [Windows](../scripts/secrets_setup.bat)
 ```bash
 secrets_setup.bat
 ```
