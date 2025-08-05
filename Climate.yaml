@@ -1,0 +1,205 @@
+# -----------------------------------------------------------------------------
+# Climate.yaml
+#
+# Purpose:
+#   ESPHome configuration for controlling Sabiana VMC climate functions.
+#   Provides switches, numbers, selects, and scripts for power, mode, and
+#   temperature threshold control, as well as a climate integration.
+#
+# Structure:
+#   - switch: Power control for VMC
+#   - number: Modbus numbers for power and temperature thresholds
+#   - select: Modbus select for operating mode
+#   - climate: Main thermostat integration for VMC
+#   - script: Quick access and automation scripts for modes and seasonal adjustment
+#   - interval: Periodic automation triggers
+#
+# Notes:
+#   - Modbus controller IDs and register addresses must match the VMC hardware.
+#   - Scripts provide quick mode switching and seasonal logic.
+# -----------------------------------------------------------------------------
+
+# Switches to control modes and functions
+switch:
+  # VMC On/Off
+  - platform: template
+    name: "VMC Power"
+    id: blk3_on_off_command_switch
+    lambda: |-
+      return id(blk3_on_off_command_number).state > 0;
+    turn_on_action:
+      - number.set:
+          id: blk3_on_off_command_number
+          value: 1
+    turn_off_action:
+      - number.set:
+          id: blk3_on_off_command_number  
+          value: 0
+
+# Fan speed control
+number:
+  - platform: modbus_controller
+    modbus_controller_id: sabiana_vmc
+    name: "VMC Power Control"
+    id: blk3_on_off_command_number
+    register_type: holding
+    address: 0x0300
+    min_value: 0
+    max_value: 1
+    step: 1
+    value_type: U_WORD
+    internal: true
+
+  # Free cooling temperature threshold
+  - platform: modbus_controller
+    modbus_controller_id: sabiana_vmc
+    name: "Blk2 - Temp for free cooling - Set"
+    id: blk2_temp_for_free_cooling_set
+    register_type: holding
+    address: 0x021B
+    min_value: 10
+    max_value: 35
+    step: 1
+    unit_of_measurement: "°C"
+    value_type: S_WORD
+    multiply: 10
+
+  # Free heating temperature threshold
+  - platform: modbus_controller
+    modbus_controller_id: sabiana_vmc
+    name: "Blk2 - Temp for free heating - Set"
+    id: blk2_temp_for_free_heating_set
+    register_type: holding
+    address: 0x021C
+    min_value: 10
+    max_value: 30
+    step: 1
+    unit_of_measurement: "°C"
+    value_type: S_WORD
+    multiply: 10
+
+# Select for operating modes
+select:
+  - platform: modbus_controller
+    modbus_controller_id: sabiana_vmc
+    name: "Mode Selection"
+    id: blk3_mode_selection_select
+    address: 0x0307
+    value_type: U_WORD
+    optionsmap:
+      "Holiday": 0
+      "Auto": 1
+      "Program": 2
+      "Manual": 3
+      "Party": 4
+
+# Main Climate integration
+climate:
+  - platform: thermostat
+    name: "Sabiana VMC"
+    id: sabiana_vmc_climate
+    sensor: blk1_temperature_t2 # Supply Air Temperature Probe
+
+    # Fan only action for VMC control
+    fan_only_action:
+      - switch.turn_on: blk3_on_off_command_switch
+      - select.set:
+          id: blk3_mode_selection_select
+          option: "Auto"
+    
+    # Only idle action for VMC control
+    idle_action:
+      - switch.turn_off: blk3_on_off_command_switch
+       
+    # Temperature thresholds
+    min_idle_time: 60s
+    min_fanning_off_time: 60s
+    min_fanning_run_time: 60s
+
+    # Custom controls for modes
+    on_boot_restore_from: memory
+
+script:
+# Adjust free cooling/heating based on season
+  - id: sabiana_vmc_seasonal_adjustment
+    then:
+      - if:
+          condition:
+            # Summer mode (external temp > 25°C)
+            sensor.in_range:
+              id: blk1_temperature_t1
+              above: 25.0
+          then:
+            # Lower free cooling threshold in summer
+            - number.set:
+                id: blk2_temp_for_free_cooling_set
+                value: 22
+            - number.set:
+                id: blk2_temp_for_free_heating_set
+                value: 18
+          else:
+            # Winter settings
+            - number.set:
+                id: blk2_temp_for_free_cooling_set
+                value: 26
+            - number.set:
+                id: blk2_temp_for_free_heating_set
+                value: 15
+
+# Quick access to Holiday mode
+  - id: sabiana_vmc_holiday_mode
+    then:
+      - switch.turn_on: blk3_on_off_command_switch
+      - select.set:
+          id: blk3_mode_selection_select
+          option: "Holiday"
+      - logger.log: "VMC switched to Holiday mode"
+
+  # Quick access to Auto mode
+  - id: sabiana_vmc_auto_mode
+    then:
+      - switch.turn_on: blk3_on_off_command_switch
+      - select.set:
+          id: blk3_mode_selection_select
+          option: "Auto"
+      - logger.log: "VMC switched to Auto mode"
+
+  # Quick access to Program mode
+  - id: sabiana_vmc_program_mode
+    then:
+      - switch.turn_on: blk3_on_off_command_switch
+      - select.set:
+          id: blk3_mode_selection_select
+          option: "Program"
+      - logger.log: "VMC switched to Program mode"
+
+  # Quick access to Manual mode
+  - id: sabiana_vmc_manual_mode
+    then:
+      - switch.turn_on: blk3_on_off_command_switch
+      - select.set:
+          id: blk3_mode_selection_select
+          option: "Manual"
+      - logger.log: "VMC switched to Manual mode"
+
+  # Quick access to Party mode (boost)
+  - id: sabiana_vmc_party_mode
+    then:
+      - switch.turn_on: blk3_on_off_command_switch
+      - select.set:
+          id: blk3_mode_selection_select
+          option: "Party"
+      - logger.log: "VMC switched to Party mode"
+
+  # Turn off VMC completely
+  - id: sabiana_vmc_off
+    then:
+      - switch.turn_off: blk3_on_off_command_switch
+      - logger.log: "VMC turned off"
+
+# Local automations
+interval:
+  # Seasonal adjustment every hour
+  - interval: 1h
+    then:
+      - script.execute: sabiana_vmc_seasonal_adjustment

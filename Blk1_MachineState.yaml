@@ -1,0 +1,881 @@
+# -----------------------------------------------------------------------------
+# Blk1_MachineState.yaml
+#
+# Purpose:
+#   ESPHome configuration for reading and decoding the machine state (Block 1)
+#   from a Sabiana VMC controller via Modbus. Provides sensors, binary sensors,
+#   and text sensors for various machine states, alarms, and environmental values.
+#
+# Structure:
+#   - Templates for common sensor types (temperature, humidity, pressure, etc.)
+#   - binary_sensor: Machine state flags, alarms, and presence indicators
+#   - text_sensor: Mode, season, and free cooling/heating state
+#   - sensor: Temperatures, humidity, fan speeds, duty cycles, pressures, CO2, etc.
+#   - modbus_controller: Reads and parses the Block 1 register map (address 0x0100)
+#
+# Notes:
+#   - The modbus_controller sensor reads 70 bytes and parses them into the above fields.
+#   - Helper functions like readSigned16ToFloat, readBitFromUns16, etc. are assumed to be defined elsewhere.
+# -----------------------------------------------------------------------------
+
+# Templates per tutti i sensori
+.temperature_sensor: &temperature_sensor
+  icon: "mdi:thermometer"
+  device_class: "temperature"
+  unit_of_measurement: "°C"
+  accuracy_decimals: 1
+  filters:
+    - filter_out: nan
+    - clamp:
+        min_value: -40
+        max_value: 85
+
+.humidity_sensor: &humidity_sensor
+  icon: "mdi:water-percent"
+  device_class: "humidity"
+  unit_of_measurement: "%"
+  accuracy_decimals: 1
+  filters:
+    - clamp:
+        min_value: 100
+        max_value: 1000
+        
+.pressure_sensor: &pressure_sensor
+  device_class: "pressure"
+  unit_of_measurement: "Pa"
+  accuracy_decimals: 1
+
+.co2: &co2
+  device_class: "carbon_dioxide"
+  unit_of_measurement: "ppm"
+
+.bit_sensor: &bit_sensor
+  icon: "mdi:checkbox-marked-circle-outline"
+
+.rpm_sensor: &rpm_sensor
+  icon: "mdi:speedometer"
+  unit_of_measurement: "RPM"
+  accuracy_decimals: 0
+  state_class: "measurement"
+  filters:
+    - filter_out: nan
+
+.percentage_sensor: &percentage_sensor
+  icon: "mdi:percent"
+  unit_of_measurement: "%"
+  accuracy_decimals: 1
+  state_class: "measurement"
+  filters:
+    - filter_out: nan
+    - clamp:
+        min_value: 0
+        max_value: 100
+
+.alarm_sensor: &alarm_sensor
+  device_class: "problem"
+  icon: "mdi:alert-circle-outline"
+
+# Sensori
+
+binary_sensor:
+  - platform: template
+    name: "Blk1 - Inverted Configuration"
+    id: blk1_inverted_configuration
+    <<: *bit_sensor
+
+  - platform: template
+    name: "Blk1 - Pre-heating preset"
+    id: blk1_preheating_preset
+    <<: *bit_sensor
+
+  - platform: template
+    name: "Blk1 - Pre-heating with water"
+    id: blk1_preheating_with_water
+    <<: *bit_sensor
+
+  - platform: template
+    name: "Blk1 - Post treatment"
+    id: blk1_post_treatment
+    <<: *bit_sensor
+
+  - platform: template
+    name: "Blk1 - Post treatment also summer"
+    id: blk1_post_treatment_summer
+    <<: *bit_sensor
+
+  - platform: template
+    name: "Blk1 - RL5"
+    id: blk1_post_rl5
+    <<: *bit_sensor
+
+  - platform: template
+    name: "Blk1 - Pre treatment"
+    id: blk1_pre_treatment
+    <<: *bit_sensor
+
+  - platform: template
+    name: "Blk1 - IN3 Boiler pressure booter"
+    id: blk1_boiler_pressure_booster
+    <<: *bit_sensor
+
+  - platform: template
+    name: "Blk1 - Post treatment external HE"
+    id: blk1_post_treatment_external_he
+    <<: *bit_sensor
+
+  - platform: template
+    name: "Blk1 - Post treatment (True on T2, False on T3)"
+    id: blk1_post_treatment2
+    <<: *bit_sensor
+
+  - platform: template
+    name: "Blk1 - Remote OFF active"
+    id: blk1_remote_off
+    <<: *bit_sensor
+
+  - platform: template
+    name: "Blk1 - Bypass active"
+    id: blk1_bypass
+    <<: *bit_sensor
+
+  - platform: template
+    name: "Blk1 - Electric Pre Heater active"
+    id: blk1_electric_pre_heater
+    <<: *bit_sensor
+
+  - platform: template
+    name: "Blk1 - Water pre-heating active"
+    id: blk1_water_pre_heating
+    <<: *bit_sensor
+
+  - platform: template
+    name: "Blk1 - Boost active"
+    id: blk1_boost
+    <<: *bit_sensor
+
+  - platform: template
+    name: "Blk1 - Defrost cycle active"
+    id: blk1_defrost_cycle
+    <<: *bit_sensor
+
+  - platform: template
+    name: "Blk1 - Party Mode ON"
+    id: blk1_party_mode
+    <<: *bit_sensor
+
+  - platform: template
+    name: "Blk1 - On/Off"
+    id: blk1_on
+    <<: *bit_sensor
+
+  - platform: template
+    name: "Blk1 - Damper Clockwise"
+    id: blk1_damper_clockwise
+    <<: *bit_sensor
+
+  - platform: template
+    name: "Blk1 - Damper Counterclockwise"
+    id: blk1_damper_counterclockwise
+    <<: *bit_sensor
+
+  - platform: template
+    name: "Blk1 - RL_FAULT_IAQ"
+    id: blk1_rl_fault_iaq
+    <<: *bit_sensor
+
+  - platform: template
+    name: "Blk1 - RL_PREHEAT"
+    id: blk1_rl_preheat
+    <<: *bit_sensor
+
+  - platform: template
+    name: "Blk1 - RL_POSTHEAT"
+    id: blk1_rl_postheat
+    <<: *bit_sensor
+
+  - platform: template
+    name: "Blk1 - RL_FANS"
+    id: blk1_rl_fans
+    <<: *bit_sensor
+
+  - platform: template
+    name: "Blk1 - RL_POSTCOOL/POSTHEAT2"
+    id: blk1_rl_postcool
+    <<: *bit_sensor
+
+  - platform: template
+    name: "Blk1 - C1"
+    id: blk1_c1
+    <<: *bit_sensor
+
+  - platform: template
+    name: "Blk1 - C2"
+    id: blk1_c2
+    <<: *bit_sensor
+  
+  - platform: template
+    name: "Blk1 - C3"
+    id: blk1_c3
+    <<: *bit_sensor
+
+  - platform: template
+    name: "Blk1 - C4"
+    id: blk1_c4
+    <<: *bit_sensor
+
+  - platform: template
+    name: "Blk1 - T1 probe failure"
+    id: blk1_t1_probe_failure
+    <<: *alarm_sensor
+
+  - platform: template
+    name: "Blk1 - T2 probe failure"
+    id: blk1_t2_probe_failure
+    <<: *alarm_sensor
+
+  - platform: template
+    name: "Blk1 - T3 probe failure"
+    id: blk1_t3_probe_failure
+    <<: *alarm_sensor
+
+  - platform: template
+    name: "Blk1 - T4 probe failure"
+    id: blk1_t4_probe_failure
+    <<: *alarm_sensor
+
+  - platform: template
+    name: "Blk1 - Timekeeper failure"
+    id: blk1_timekeeper_failure
+    <<: *alarm_sensor
+
+  - platform: template
+    name: "Blk1 - Frost alarm"
+    id: blk1_frost_alarm_t1
+    <<: *alarm_sensor
+
+  - platform: template
+    name: "Blk1 - Frost alarm (T2 probe)"
+    id: blk1_frost_alarm_t2
+    <<: *alarm_sensor
+
+  - platform: template
+    name: "Blk1 - Fireplace alarm"
+    id: blk1_fireplace_alarm
+    <<: *alarm_sensor
+
+  - platform: template
+    name: "Blk1 - Pressure transducer failure"
+    id: blk1_pressure_transducer_failure
+    <<: *alarm_sensor
+
+  - platform: template
+    name: "Blk1 - Filter alarm"
+    id: blk1_filter_alarm
+    <<: *alarm_sensor
+
+  - platform: template
+    name: "Blk1 - Fans failure"
+    id: blk1_fans_alarm
+    <<: *alarm_sensor
+
+  - platform: template
+    name: "Blk1 - RH or CO2 sensor failure"
+    id: blk1_rh_co2_sensor_failure
+    <<: *alarm_sensor
+
+  - platform: template
+    name: "Blk1 - Fan thermic input alarm"
+    id: blk1_fan_thermic_input_alarm
+    <<: *alarm_sensor
+
+  - platform: template
+    name: "Blk1 - Pre heating alarm"
+    id: blk1_pre_heating_alarm
+    <<: *alarm_sensor
+
+  - platform: template
+    name: "Blk1 - Pre frost alarm (T2)"
+    id: blk1_pre_frost_alarm
+    <<: *alarm_sensor
+
+  - platform: template
+    name: "Blk1 - RPM too high detected"
+    id: blk1_rpm_too_high_detected
+    <<: *bit_sensor
+
+  - platform: template
+    name: "Blk1 - IAQ used"
+    id: blk1_iaq_used
+    <<: *bit_sensor
+
+  - platform: template
+    name: "Blk1 - Post treatment used"
+    id: blk1_posttreatment_used
+    <<: *bit_sensor
+
+  - platform: template
+    name: "Blk1 - HE used"
+    id: blk1_he_used
+    <<: *bit_sensor
+
+  - platform: template
+    name: "Blk1 - Boiler boost mode used"
+    id: blk1_boiler_boost_mode_used
+    <<: *bit_sensor
+
+  - platform: template
+    name: "Blk1 - CO2 sensor present"
+    id: blk1_co2_sensor_present
+    <<: *bit_sensor
+
+  - platform: template
+    name: "Blk1 - Differential pressure sensor present"
+    id: blk1_differential_pressure_sensor_present
+    <<: *bit_sensor
+
+  - platform: template
+    name: "Blk1 - RH sensor present"
+    id: blk1_rh_sensor_present
+    <<: *bit_sensor
+
+  - platform: template
+    name: "Blk1 - Reverse mounting"
+    id: blk1_reverse_mounting
+    <<: *bit_sensor
+    
+text_sensor:
+  - platform: template
+    name: "Blk1 - Mode"
+    id: blk1_mode
+    icon: "mdi:state-machine"
+
+  - platform: template
+    name: "Blk1 - Season"
+    id: blk1_season
+    icon: "mdi:sun-snowflake-variant"
+
+  - platform: template
+    name: "Blk1 -  Free cooling / Free heating"
+    id: blk1_free_cooling_heating
+    icon: mdi:sun-snowflake
+
+sensor:
+  - platform: template
+    name: "Blk1 - Temperature T1"
+    id: blk1_temperature_t1
+    <<: *temperature_sensor
+
+  - platform: template
+    name: "Blk1 - Temperature T2"
+    id: blk1_temperature_t2
+    <<: *temperature_sensor
+
+  - platform: template
+    name: "Blk1 - Temperature T3"
+    id: blk1_temperature_t3
+    <<: *temperature_sensor
+
+  - platform: template
+    name: "Blk1 - Temperature T4"
+    id: blk1_temperature_t4
+    <<: *temperature_sensor
+
+  - platform: template
+    name: "Blk1 - Program selection"
+    id: blk1_program_selection
+    icon: "mdi:fan-auto"
+
+  - platform: template
+    name: "Blk1 - Humidity setpoint"
+    id: blk1_humidity_setpoint
+    <<: *humidity_sensor
+
+  - platform: template
+    name: "Blk1 - Filter counter divided by 15 minutes"
+    id: blk1_filter_counter
+    icon: mdi:clock-time-three-outline
+
+  - platform: template
+    name: "Blk1 - Fan 1 Speed"
+    id: blk1_fan1_speed
+    icon: "mdi:fan-speed-1"
+    <<: *rpm_sensor
+
+  - platform: template
+    name: "Blk1 - Fan 2 Speed"
+    id: blk1_fan2_speed
+    icon: "mdi:fan-speed-2"
+    <<: *rpm_sensor
+
+  - platform: template
+    name: "Blk1 - Duty cycle fan 1"
+    id: blk1_duty_fan1
+    icon: "mdi:fan-speed-1"
+    <<: *percentage_sensor
+
+  - platform: template
+    name: "Blk1 - Duty cycle fan 2"
+    id: blk1_duty_fan2
+    icon: "mdi:fan-speed-2"
+    <<: *percentage_sensor
+
+  - platform: template
+    name: "Blk1 - Duty cycle El. Preheater"
+    id: blk1_duty_fan_el_preheater
+    icon: "mdi:fan"
+    <<: *percentage_sensor
+
+  - platform: template
+    name: "Blk1 - Diff pressure sensor 1"
+    id: blk1_diff_pressure_sensor_1
+    <<: *pressure_sensor
+
+  - platform: template
+    name: "Blk1 - Diff pressure sensor 2"
+    id: blk1_diff_pressure_sensor_2
+    <<: *pressure_sensor
+
+  - platform: template
+    name: "Blk1 - CO2 reading"
+    id: blk1_co2_reading
+    <<: *co2
+
+  - platform: template
+    name: "Blk1 - RH reading"
+    id: blk1_rh_reading
+    <<: *humidity_sensor
+
+  - platform: template
+    name: "Blk1 - Rho1" # Velocità minima
+    id: blk1_rho1
+
+  - platform: template
+    name: "Blk1 - Rho2" # Velocità media-bassa
+    id: blk1_rho2
+
+  - platform: template
+    name: "Blk1 - Rho3" # Velocità media-alta
+    id: blk1_rho3
+
+  - platform: template
+    name: "Blk1 - Rho4" # Velocità massima
+    id: blk1_rho4
+
+  - platform: template
+    name: "Blk1 - Cspeed1"
+    id: blk1_cspeed1
+
+  - platform: template
+    name: "Blk1 - Cspeed2"
+    id: blk1_cspeed2
+
+  - platform: template
+    name: "Blk1 - Hours of operation"
+    id: blk1_hours_of_operation
+    icon: mdi:counter
+    unit_of_measurement: "h"
+    state_class: "total_increasing"
+    device_class: "duration"
+
+  - platform: modbus_controller
+    modbus_controller_id: sabiana_vmc
+    name: "Block 1 - Machine state"
+    address: 0x0100
+    register_type: holding
+    register_count: 35 # 0x122 + 1
+    response_size: 70
+    # cache: false
+    internal: true
+    lambda: |-
+      // ESP_LOGI("modbus", "Vector integrity check:");
+      // ESP_LOGI("modbus", "data.empty() = %s", data.empty() ? "true" : "false");
+      // ESP_LOGI("modbus", "data.capacity() = %zu", data.capacity());
+      // for (size_t i = 0; i < data.size(); i++) {
+      //   ESP_LOGI("modbus", "  data[%zu] = 0x%02X", i, data[i]);
+      // }
+      ESP_LOGD("modbus", "Update values for Block1");
+
+      if ((int)data.size() != 70) {
+        ESP_LOGW("modbus", "Block 1 - Dimensione risposta errata: %d", data.size());
+        return NAN;
+      }
+
+      float temperatureT1 = readSigned16ToFloat(data, 0, Scale::DECIMAL);
+      id(blk1_temperature_t1).publish_state(temperatureT1);
+      ESP_LOGD("modbus", "Block 1 - Temperatura T1: %.2f (0x%02X, 0x%02X)", temperatureT1, data[0], data[1]); // 0x100
+
+      float temperatureT2 = readSigned16ToFloat(data, 2, Scale::DECIMAL);
+      id(blk1_temperature_t2).publish_state(temperatureT2);
+      ESP_LOGD("modbus", "Block 1 - Temperatura T2: %.2f (0x%02X, 0x%02X)", temperatureT2, data[2], data[3]); // 0x101
+
+      float temperatureT3 = readSigned16ToFloat(data, 4, Scale::DECIMAL);
+      id(blk1_temperature_t3).publish_state(temperatureT3);
+      ESP_LOGD("modbus", "Block 1 - Temperatura T3: %.2f (0x%02X, 0x%02X)", temperatureT3, data[4], data[5]); // 0x102
+
+      float temperatureT4 = readSigned16ToFloat(data, 6, Scale::DECIMAL);
+      id(blk1_temperature_t4).publish_state(temperatureT4);
+      ESP_LOGD("modbus", "Block 1 - Temperatura T4: %.2f (0x%02X, 0x%02X)", temperatureT4, data[6], data[7]); // 0x103
+
+      // 0x104 Dips Configuration
+
+      uint16_t test104 = readUnsigned16(data, 8);
+      ESP_LOGD("modbus", "test104: %d (0x%04X)", test104, test104);
+      ESP_LOGD("modbus", "Byte raw: [10]=0x%02X, [11]=0x%02X", data[10], data[11]);
+      ESP_LOGD("modbus", "Rappresentazione binaria: %s", 
+               std::bitset<16>(test104).to_string().c_str());
+
+      bool invertedConfiguration = readBitFromUns16(data, 8, 0);
+      id(blk1_inverted_configuration).publish_state(invertedConfiguration);
+      ESP_LOGD("modbus", "Inverted Configuration (bit 0): %d", invertedConfiguration);
+
+      bool preheating_preset = readBitFromUns16(data, 8, 1);
+      id(blk1_preheating_preset).publish_state(preheating_preset);
+      ESP_LOGD("modbus", "Pre-heating preset (bit 1): %d", preheating_preset);
+
+      bool preheating_with_water = readBitFromUns16(data, 8, 2);
+      id(blk1_preheating_with_water).publish_state(preheating_with_water);
+      ESP_LOGD("modbus", "Pre-heating with water (bit 2): %d", preheating_with_water);
+
+      bool post_treatment = readBitFromUns16(data, 8, 3);
+      id(blk1_post_treatment).publish_state(post_treatment);
+      ESP_LOGD("modbus", "Post treatment (bit 3): %d", post_treatment);
+
+      bool post_treatment_summer = readBitFromUns16(data, 8, 4);
+      id(blk1_post_treatment_summer).publish_state(post_treatment_summer);
+      ESP_LOGD("modbus", "Post treatment summer (bit 4): %d", post_treatment_summer);
+
+      bool post_rl5 = readBitFromUns16(data, 8, 5);
+      id(blk1_post_rl5).publish_state(post_rl5);
+      ESP_LOGD("modbus", "Post RL5 (bit 5): %d", post_rl5);
+
+      bool pre_treatment = readBitFromUns16(data, 8, 6);
+      id(blk1_pre_treatment).publish_state(pre_treatment);
+      ESP_LOGD("modbus", "Post pre-treatment (bit 6): %d", pre_treatment);
+
+      bool boiler_pressure_booster = readBitFromUns16(data, 8, 7);
+      id(blk1_boiler_pressure_booster).publish_state(boiler_pressure_booster);
+      ESP_LOGD("modbus", "Boiler pressure booster (bit 7): %d", boiler_pressure_booster);
+
+      bool post_treatment_external_he = readBitFromUns16(data, 8, 8);
+      id(blk1_post_treatment_external_he).publish_state(post_treatment_external_he);
+      ESP_LOGD("modbus", "Post treatment external HE (bit 8): %d", post_treatment_external_he);
+
+      bool post_treatment2 = readBitFromUns16(data, 8, 9);
+      id(blk1_post_treatment2).publish_state(post_treatment2);
+      ESP_LOGD("modbus", "Post treatment 2 (bit 9): %d", post_treatment2);
+
+      // Bit 10-13 free
+      // Bit 14-15 reserved
+
+      // 0x105 Machine state and mode
+     
+      bool remote_off = readBitFromUns16(data, 10, 0);
+      id(blk1_remote_off).publish_state(remote_off);
+      ESP_LOGD("modbus", "Remote OFF (bit 0): %d", remote_off);
+
+      bool bypass = readBitFromUns16(data, 10, 1);
+      id(blk1_bypass).publish_state(bypass);
+      ESP_LOGD("modbus", "Bypass (bit 1): %d", bypass);
+
+      bool electric_pre_heater = readBitFromUns16(data, 10, 2);
+      id(blk1_electric_pre_heater).publish_state(electric_pre_heater);
+      ESP_LOGD("modbus", "Electric pre heater (bit 2): %d", electric_pre_heater);
+
+      bool water_pre_heating = readBitFromUns16(data, 10, 3);
+      id(blk1_water_pre_heating).publish_state(water_pre_heating);
+      ESP_LOGD("modbus", "Water pre heating (bit 3): %d", water_pre_heating);
+
+      bool boost = readBitFromUns16(data, 10, 4);      
+      id(blk1_boost).publish_state(boost);
+      ESP_LOGD("modbus", "Boost (bit 4): %d", boost);
+
+      // Bit 6 reserved
+
+      bool defrost_cycle = readBitFromUns16(data, 10, 5);
+      id(blk1_defrost_cycle).publish_state(defrost_cycle);
+      ESP_LOGD("modbus", "Defrost cycle (bit 5): %d", defrost_cycle);
+
+      bool party_mode = readBitFromUns16(data, 10, 7);
+      id(blk1_party_mode).publish_state(party_mode);
+      ESP_LOGD("modbus", "Party mode (bit 7): %d", party_mode);
+
+      bool on = readBitFromUns16(data, 10, 8);
+      id(blk1_on).publish_state(on);
+      ESP_LOGD("modbus", "On/Off (bit 8): %d", on);
+
+      std::string mode = "Unknown";
+      uint8_t mode_raw = readNBitsFromUns16(data, 10, 9, 2);
+      ESP_LOGD("modbus", "Mode raw value (bit 9-10): %d", mode_raw);
+      switch(mode_raw) {
+        case 0:
+          mode = "Holiday";
+          break;          
+        case 1:
+          mode = "Auto";
+          break;
+        case 2:
+          mode = "Program";
+          break;
+        case 3:
+          mode = "Manual";
+          break;
+      }
+      id(blk1_mode).publish_state(mode);
+      ESP_LOGD("modbus", "Mode: %s", mode.c_str());
+
+      bool season = readBitFromUns16(data, 10, 11);
+      if(season) {
+        id(blk1_season).publish_state("Summer");
+      } else {
+        id(blk1_season).publish_state("Winter");
+      }
+      ESP_LOGD("modbus", "Season (bit 11): %d", season);
+
+      uint8_t program_selection = readNBitsFromUns16(data, 10, 12, 4);
+      ESP_LOGD("modbus", "Program selection; Raw value: %d", program_selection);
+      id(blk1_program_selection).publish_state(program_selection);
+      ESP_LOGD("modbus", "Program selection (bit 12-15): %d", program_selection);
+
+      float humiditySetpoint = readSigned16ToFloat(data, 12, Scale::DECIMAL);
+      id(blk1_humidity_setpoint).publish_state(humiditySetpoint);
+      ESP_LOGD("modbus", "Block 1 - Soglia umidità aggiornata: %.2f (0x%02X, 0x%02X)", humiditySetpoint, data[12], data[13]); // 0x106
+
+      uint16_t filterCounter = readUnsigned16(data, 14);
+      id(blk1_filter_counter).publish_state(filterCounter);
+      ESP_LOGD("modbus", "Block 1 - Contatore filtro: %d", filterCounter); // 0x107
+
+      // 0x108 Digital outputs
+      bool damper_clockwise = readBitFromUns16(data, 16, 2);
+      id(blk1_damper_clockwise).publish_state(damper_clockwise);
+      ESP_LOGD("modbus", "Damper Clockwise (bit 2): %d", damper_clockwise);
+
+      bool damper_counterclockwise = readBitFromUns16(data, 16, 3);
+      id(blk1_damper_counterclockwise).publish_state(damper_counterclockwise);
+      ESP_LOGD("modbus", "Damper Counterclockwise (bit 2): %d", damper_counterclockwise);
+
+      // 0x109 Stato Relè
+
+      bool rl_fault_iaq = readBitFromUns16(data, 18, 0);
+      id(blk1_rl_fault_iaq).publish_state(rl_fault_iaq);
+      ESP_LOGD("modbus", "RL_FAULT_IAQ (bit 0): %d", rl_fault_iaq);
+
+      bool rl_preheat = readBitFromUns16(data, 18, 1);
+      id(blk1_rl_preheat).publish_state(rl_preheat);
+      ESP_LOGD("modbus", "RL_PREHEAT (bit 1): %d", rl_preheat);
+
+      bool rl_postheat = readBitFromUns16(data, 18, 2);
+      id(blk1_rl_postheat).publish_state(rl_postheat);
+      ESP_LOGD("modbus", "RL_POSTHEAT (bit 2): %d", rl_postheat);
+
+      bool rl_fans = readBitFromUns16(data, 18, 3);
+      id(blk1_rl_fans).publish_state(rl_fans);
+      ESP_LOGD("modbus", "RL_FANS (bit 3): %d", rl_fans);
+
+      bool rl_postcool = readBitFromUns16(data, 18, 4);
+      id(blk1_rl_postcool).publish_state(rl_postcool);
+      ESP_LOGD("modbus", "RL_POSTCOOL (bit 4): %d", rl_postcool);
+
+      // 0x010A Digital Inputs
+
+      bool c1 = readBitFromUns16(data, 20, 1);
+      id(blk1_c1).publish_state(c1);
+      ESP_LOGD("modbus", "C1 (bit 4): %d", c1);
+
+      bool c2 = readBitFromUns16(data, 20, 2);
+      id(blk1_c2).publish_state(c2);
+      ESP_LOGD("modbus", "C2 (bit 4): %d", c2);
+
+      bool c3 = readBitFromUns16(data, 20, 3);
+      id(blk1_c3).publish_state(c3);
+      ESP_LOGD("modbus", "C3 (bit 4): %d", c3);
+
+      bool c4 = readBitFromUns16(data, 20, 4);
+      id(blk1_c4).publish_state(c4);
+      ESP_LOGD("modbus", "C4 (bit 4): %d", c4);
+
+      uint16_t fan1_speed = readUnsigned16(data, 22);
+      id(blk1_fan1_speed).publish_state(fan1_speed);
+      ESP_LOGD("modbus", "Block 1 - Fan 1 speed: %d", fan1_speed); // 0x10B
+
+      uint16_t fan2_speed = readUnsigned16(data, 24);
+      id(blk1_fan2_speed).publish_state(fan2_speed);
+      ESP_LOGD("modbus", "Block 1 - Fan 2 speed: %d", fan2_speed); // 0x10C
+
+      float duty_fan1 = readSigned16ToFloat(data, 26, Scale::DECIMAL);
+      id(blk1_duty_fan1).publish_state(duty_fan1);
+      ESP_LOGD("modbus", "Block 1 - Duty cycle fan 1: %d", duty_fan1); // 0x10D
+
+      float duty_fan2 = readSigned16ToFloat(data, 28, Scale::DECIMAL);
+      id(blk1_duty_fan2).publish_state(duty_fan2);
+      ESP_LOGD("modbus", "Block 1 - Duty cycle fan 2: %d", duty_fan2); // 0x10E
+
+      float duty_fan_el_preheater = readSigned16ToFloat(data, 30, Scale::DECIMAL);
+      id(blk1_duty_fan_el_preheater).publish_state(duty_fan_el_preheater);
+      ESP_LOGD("modbus", "Block 1 - Duty cycle El. Preheater: %d", duty_fan_el_preheater); // 0x10F
+
+      // 0x110 Alarms
+
+      bool t1_probe_failure = readBitFromUns16(data, 32, 0);
+      id(blk1_t1_probe_failure).publish_state(t1_probe_failure);
+      ESP_LOGD("modbus", "T1 probe failure (bit 0): %d", t1_probe_failure);
+
+      bool t2_probe_failure = readBitFromUns16(data, 32, 1);
+      id(blk1_t2_probe_failure).publish_state(t2_probe_failure);
+      ESP_LOGD("modbus", "T2 probe failure (bit 1): %d", t2_probe_failure);
+
+      bool t3_probe_failure = readBitFromUns16(data, 32, 2);
+      id(blk1_t3_probe_failure).publish_state(t3_probe_failure);
+      ESP_LOGD("modbus", "T3 probe failure (bit 2): %d", t3_probe_failure);
+
+      bool t4_probe_failure = readBitFromUns16(data, 32, 3);
+      id(blk1_t4_probe_failure).publish_state(t4_probe_failure);
+      ESP_LOGD("modbus", "T4 probe failure (bit 3): %d", t4_probe_failure);
+
+      bool timekeeper_failure = readBitFromUns16(data, 32, 4);
+      id(blk1_timekeeper_failure).publish_state(timekeeper_failure);
+      ESP_LOGD("modbus", "Timekeeper failure (bit 4): %d", timekeeper_failure);
+
+      bool frost_alarm_t1 = readBitFromUns16(data, 32, 6);
+      id(blk1_frost_alarm_t1).publish_state(frost_alarm_t1);
+      ESP_LOGD("modbus", "Frost alarm T1 (bit 6): %d", frost_alarm_t1);
+
+      bool frost_alarm_t2 = readBitFromUns16(data, 32, 6);
+      id(blk1_frost_alarm_t2).publish_state(frost_alarm_t2);
+      ESP_LOGD("modbus", "Frost alarm T2 (bit 6): %d", frost_alarm_t2);
+
+      bool fireplace_alarm = readBitFromUns16(data, 32, 7);
+      id(blk1_fireplace_alarm).publish_state(fireplace_alarm);
+      ESP_LOGD("modbus", "Fireplace alarm (bit 7): %d", fireplace_alarm);
+
+      bool pressure_transducer_failure = readBitFromUns16(data, 32, 8);
+      id(blk1_pressure_transducer_failure).publish_state(pressure_transducer_failure);
+      ESP_LOGD("modbus", "Pressure transducer failure (bit 8): %d", pressure_transducer_failure);
+
+      bool filter_alarm = readBitFromUns16(data, 32, 9);
+      id(blk1_filter_alarm).publish_state(filter_alarm);
+      ESP_LOGD("modbus", "Filter alarm (bit 9): %d", filter_alarm);
+
+      bool fans_alarm = readBitFromUns16(data, 32, 10);
+      id(blk1_fans_alarm).publish_state(fans_alarm);
+      ESP_LOGD("modbus", "Fans alarm (bit 10): %d", fans_alarm);
+
+      bool rh_co2_sensor_failure = readBitFromUns16(data, 32, 11);
+      id(blk1_rh_co2_sensor_failure).publish_state(rh_co2_sensor_failure);
+      ESP_LOGD("modbus", "RH CO2_sensor_failure (bit 11): %d", rh_co2_sensor_failure);
+
+      bool fan_thermic_input_alarm = readBitFromUns16(data, 32, 12);
+      id(blk1_fan_thermic_input_alarm).publish_state(fan_thermic_input_alarm);
+      ESP_LOGD("modbus", "Fan thermic input alarm (bit 12): %d", fan_thermic_input_alarm);
+
+      // bit 13 not used
+
+      bool pre_heating_alarm = readBitFromUns16(data, 32, 14);
+      id(blk1_pre_heating_alarm).publish_state(pre_heating_alarm);
+      ESP_LOGD("modbus", "Pre heating alarm (bit 14): %d", pre_heating_alarm);
+
+      bool pre_frost_alarm = readBitFromUns16(data, 32, 15);
+      id(blk1_pre_frost_alarm).publish_state(pre_frost_alarm);
+      ESP_LOGD("modbus", "Pre frost alarm T2 (bit 15): %d", pre_frost_alarm);
+
+      int16_t diff_pressure_sensor_1 = readSigned16(data, 34);
+      id(blk1_diff_pressure_sensor_1).publish_state(diff_pressure_sensor_1);
+      ESP_LOGD("modbus", "Block 1 - Diff pressure sensor 1: %d", diff_pressure_sensor_1); // 0x111
+
+      int16_t diff_pressure_sensor_2 = readSigned16(data, 36);
+      id(blk1_diff_pressure_sensor_2).publish_state(diff_pressure_sensor_2);
+      ESP_LOGD("modbus", "Block 1 - Diff pressure sensor 1: %d", diff_pressure_sensor_2); // 0x112
+
+      uint16_t co2_reading = readSigned16(data, 38);
+      id(blk1_co2_reading).publish_state(co2_reading);
+      ESP_LOGD("modbus", "Block 1 - CO2 reading: %d", co2_reading); // 0x113
+
+      float rh_reading = readSigned16ToFloat(data, 40, Scale::DECIMAL);
+      id(blk1_rh_reading).publish_state(rh_reading);
+      ESP_LOGD("modbus", "Block 1 - RH reading: %d", rh_reading); // 0x114
+
+      float rho1 = readFloat(data, 42);
+      id(blk1_rho1).publish_state(rho1);
+      ESP_LOGD("modbus", "Block 1 - Rho1: %d", rho1); // 0x115
+
+      float rho2 = readFloat(data, 46);
+      id(blk1_rho2).publish_state(rho2);
+      ESP_LOGD("modbus", "Block 1 - Rho2: %d", rho2); // 0x117
+
+      float rho3 = readFloat(data, 50);
+      id(blk1_rho3).publish_state(rho3);
+      ESP_LOGD("modbus", "Block 1 - Rho3: %d", rho3); // 0x119
+
+      float rho4 = readFloat(data, 54);
+      id(blk1_rho4).publish_state(rho4);
+      ESP_LOGD("modbus", "Block 1 - Rho4: %d", rho4); // 0x11B
+
+      uint16_t cspeed1 = readUnsigned16(data, 58);
+      id(blk1_cspeed1).publish_state(cspeed1);
+      ESP_LOGD("modbus", "Block 1 - Cspeed1: %d", cspeed1); // 0x11D
+
+      uint16_t cspeed2 = readUnsigned16(data, 60);
+      id(blk1_cspeed2).publish_state(cspeed2);
+      ESP_LOGD("modbus", "Block 1 - Cspeed2: %d", cspeed2); // 0x11E
+
+      // 0x011F Options/Info
+
+      bool rpm_too_high_detected = readBitFromUns16(data, 62, 1);
+      id(blk1_rpm_too_high_detected).publish_state(rpm_too_high_detected);
+      ESP_LOGD("modbus", "RPM too high detected (bit 1): %d", rpm_too_high_detected);
+
+      // Bit 2-7 not used
+
+      bool iaq_used = readBitFromUns16(data, 62, 8);
+      id(blk1_iaq_used).publish_state(iaq_used);
+      ESP_LOGD("modbus", "IAQ used (bit 8): %d", iaq_used);
+      
+      bool posttreatment_used = readBitFromUns16(data, 62, 9);
+      id(blk1_posttreatment_used).publish_state(posttreatment_used);
+      ESP_LOGD("modbus", "Post treatment used (bit 9): %d", posttreatment_used);
+
+      bool he_used = readBitFromUns16(data, 62, 10);
+      id(blk1_he_used).publish_state(he_used);
+      ESP_LOGD("modbus", "HE used (bit 10): %d", he_used);
+
+      bool boiler_boost_mode_used = readBitFromUns16(data, 62, 11);
+      id(blk1_boiler_boost_mode_used).publish_state(boiler_boost_mode_used);
+      ESP_LOGD("modbus", "Boiler boost mode used (bit 11): %d", boiler_boost_mode_used);
+
+      bool co2_sensor_present = readBitFromUns16(data, 62, 12);
+      id(blk1_co2_sensor_present).publish_state(co2_sensor_present);
+      ESP_LOGD("modbus", "CO2 sensor present (bit 12): %d", co2_sensor_present);
+
+      bool differential_pressure_sensor_present = readBitFromUns16(data, 62, 13);
+      id(blk1_differential_pressure_sensor_present).publish_state(differential_pressure_sensor_present);
+      ESP_LOGD("modbus", "Differential pressure sensor present (bit 13): %d", differential_pressure_sensor_present);
+
+      bool rh_sensor_present = readBitFromUns16(data, 62, 14);
+      id(blk1_rh_sensor_present).publish_state(rh_sensor_present);
+      ESP_LOGD("modbus", "RH sensor present (bit 14): %d", rh_sensor_present);
+
+      bool reverse_mounting = readBitFromUns16(data, 62, 15);
+      id(blk1_reverse_mounting).publish_state(reverse_mounting);
+      ESP_LOGD("modbus", "Reverse mounting (bit 15): %d", reverse_mounting);
+
+      uint32_t hours_of_operation = readUnsigned32(data, 64);
+      id(blk1_hours_of_operation).publish_state(hours_of_operation);
+      ESP_LOGD("modbus", "Block 1 - Hours of operation: %d", hours_of_operation); // 0x120
+
+      std::string free_cooling_heating = "Unknown";
+      uint16_t free_cooling_heating_raw = readUnsigned16(data, 68);
+      ESP_LOGD("modbus", "free_cooling_heating_raw value: %d", free_cooling_heating_raw);
+      switch(free_cooling_heating_raw) {
+        case 0:
+          free_cooling_heating = "No free cooling/heating";
+          break;          
+        case 1:
+          free_cooling_heating = "Free cooling";
+          break;
+        case 2:
+          free_cooling_heating = "Free heating";
+          break;
+      }
+      id(blk1_free_cooling_heating).publish_state(free_cooling_heating);
+      ESP_LOGD("modbus", "free_cooling_heating: %s", free_cooling_heating.c_str());
+
+      return 1; // Valore dummy per questo sensore

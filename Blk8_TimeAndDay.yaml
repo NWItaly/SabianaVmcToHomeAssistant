@@ -1,0 +1,86 @@
+# -----------------------------------------------------------------------------
+# Blk8_TimeAndDay.yaml
+#
+# Purpose:
+#   ESPHome configuration for reading and decoding the current time and day
+#   from a Sabiana VMC controller via Modbus. Publishes time and day as text sensors.
+#
+# Structure:
+#   - text_sensor: Displays the current time and day of week
+#   - sensor: Modbus controller sensor to read and parse Block 8 (time and day)
+#
+# Notes:
+#   - The modbus_controller sensor reads 4 bytes and parses them into time and day.
+#   - Helper functions like readUnsigned16 and str_sprintf are assumed to be defined elsewhere.
+# -----------------------------------------------------------------------------
+
+text_sensor:
+  - platform: template
+    name: "Blk8 - Time"
+    id: blk8_time
+    icon: mdi:calendar-week
+
+  - platform: template
+    name: "Blk8 - Day"
+    id: blk8_day
+    icon: mdi:calendar-today
+
+sensor:
+  - platform: modbus_controller
+    modbus_controller_id: sabiana_vmc
+    name: "Block 8 - Time and days"
+    address: 0x0800
+    register_type: holding
+    register_count: 2 # 0x801 + 1
+    response_size: 4
+    # cache: false
+    internal: true
+    lambda: |-
+      // ESP_LOGI("modbus", "Vector integrity check:");
+      // ESP_LOGI("modbus", "data.empty() = %s", data.empty() ? "true" : "false");
+      // ESP_LOGI("modbus", "data.capacity() = %zu", data.capacity());
+      // for (size_t i = 0; i < data.size(); i++) {
+      //   ESP_LOGI("modbus", "  data[%zu] = 0x%02X", i, data[i]);
+      // }
+      // ESP_LOGD("modbus", "Update values for Block2");
+
+      if ((int)data.size() != 4) {
+        ESP_LOGW("modbus", "Block 8 - Dimensione risposta errata: %d", data.size());
+        return NAN;
+      }
+
+      uint16_t time_row = readUnsigned16(data, 0);
+      uint8_t hour = (time_row >> 8) & 0xFF;  // High byte
+      uint8_t minutes = time_row & 0xFF;      // Low byte
+      id(blk8_time).publish_state(str_sprintf("%02d:%02d", hour, minutes));
+
+      std::string day = "Unknown";
+      uint8_t day_raw = readUnsigned16(data, 2);
+      ESP_LOGD("modbus", "Day raw value: %d", day_raw); // 0x801
+      switch(day_raw) {
+        case 1:
+          day = "Monday";
+          break;          
+        case 2:
+          day = "Tuesday";
+          break;
+        case 3:
+          day = "Wednesday";
+          break;
+        case 4:
+          day = "Thursday";
+          break;
+        case 5:
+          day = "Friday";
+          break;
+        case 6:
+          day = "Saturday";
+          break;
+        case 7:
+          day = "Sunday";
+          break;
+      }
+      id(blk8_day).publish_state(day);
+      ESP_LOGD("modbus", "Block 8 - Day: %s", day.c_str());
+      
+      return 1; // Valore dummy per questo sensore

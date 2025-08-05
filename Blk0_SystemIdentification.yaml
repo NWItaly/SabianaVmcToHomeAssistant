@@ -1,0 +1,117 @@
+# -----------------------------------------------------------------------------
+# Blk0_SystemIdentification.yaml
+#
+# Purpose:
+#   ESPHome configuration for reading system identification data from a Sabiana VMC
+#   controller via Modbus. Extracts serial number, controller model, firmware and
+#   protocol releases, and T-EP firmware release.
+#
+# Structure:
+#   - sensor:
+#       - Template sensor for protocol release (numeric)
+#       - Modbus controller sensor to read and parse system identification block
+#   - text_sensor:
+#       - Serial number (string)
+#       - Controller model (string)
+#       - Firmware release (string)
+#       - T-EP firmware release (string)
+#
+# Notes:
+#   - The modbus_controller sensor reads 28 bytes and parses them into the above fields.
+#   - Helper functions like format_version_from_modbus are assumed to be defined elsewhere.
+# -----------------------------------------------------------------------------
+
+sensor: 
+      
+  - platform: template
+    name: "Blk0 - Protocol Release"
+    id: vmc_protocol_release
+    icon: "mdi:protocol"
+
+  - platform: modbus_controller
+    modbus_controller_id: sabiana_vmc
+    name: "Block 0 - System Identification"
+    address: 0x0000
+    register_type: holding
+    register_count: 14
+    response_size: 28
+    # cache: false
+    internal: true
+    lambda: |-
+      if (data.size() != 28) {
+        ESP_LOGW("modbus", "Block 0 - Dimensione risposta errata: %d", data.size());
+        return NAN;
+      }
+      
+      // ################ Serial number
+      std::string serial_number = "";
+      for (int i = 0; i < 20; i++) {
+        if (data[i] != 0 && data[i] <= 126) {
+          serial_number += (char)data[i];
+        }
+      }
+      
+      // Rimuovi spazi finali
+      serial_number.erase(serial_number.find_last_not_of(" \t\n\r\f\v") + 1);
+      id(blk0_serial_number).publish_state(serial_number);
+      ESP_LOGD("modbus", "Serial Number aggiornato: %s", serial_number.c_str());
+    
+      // ################ Controller model
+      std::string controller_model = "";
+      uint16_t controller_model_int = (data[20] << 8) | data[21];
+      switch (controller_model_int) {
+        case 0x5200: controller_model = "ESP170V"; break;
+        case 0x5201: controller_model = "ESP270"; break;
+        case 0x5202: controller_model = "ESP360"; break;
+        case 0x5203: controller_model = "ESP460"; break;
+        case 0x5204: controller_model = "ESP170H"; break;
+        case 0x5205: controller_model = "ESP180"; break;
+        case 0x5206: controller_model = "ESP280"; break;
+        case 0x5207: controller_model = "ESP370"; break;
+        case 0x5208: controller_model = "ESP600"; break;
+        case 0x5300: controller_model = "ENYP1"; break;
+        case 0x5301: controller_model = "ENYP2"; break;
+        case 0x5302: controller_model = "ENYP3"; break;
+        case 0x5303: controller_model = "ENYP4"; break;
+        default: controller_model = "Unknown Model (0x" + format_hex(controller_model_int) + ")";
+      }
+      id(blk0_controller_model).publish_state(controller_model);
+      ESP_LOGD("modbus", "Controller Model aggiornato: %.0f", controller_model);
+    
+      // ################ Firmware release
+      std::string firmware_release = format_version_from_modbus(std::vector<uint8_t>{data[22], data[23]});
+      id(blk0_firmware_release).publish_state(firmware_release);
+      ESP_LOGD("modbus", "Firmware Release aggiornato: %.2f", firmware_release);
+
+      // ################ Protocol release
+      uint16_t protocol_release = (data[24] << 8) | data[25];
+      id(vmc_protocol_release).publish_state(protocol_release);
+      ESP_LOGD("modbus", "Protocol Release aggiornato: %.2f", protocol_release);
+
+      // ################ T-EP Firmware release
+      std::string tep_firmware_release = format_version_from_modbus(std::vector<uint8_t>{data[26], data[27]});
+      id(blk0_tep_firmware_release).publish_state(tep_firmware_release);
+      ESP_LOGD("modbus", "T-PE Firmware Release aggiornato: %.2f", tep_firmware_release);
+
+      return 1; // Valore dummy per questo sensore
+
+text_sensor:
+  - platform: template
+    name: "Blk0 - Serial Number"
+    id: blk0_serial_number
+    icon: "mdi:barcode"
+
+  - platform: template
+    name: "Blk0 - Controller Model"
+    id: blk0_controller_model
+    icon: "mdi:chip"
+    
+  - platform: template
+    name: "Blk0 - Firmware Release"
+    id: blk0_firmware_release
+    icon: "mdi:file-code"
+    
+  - platform: template
+    name: "Blk0 - T-EP Release"
+    id: blk0_tep_firmware_release
+    icon: "mdi:file-code"

@@ -1,0 +1,838 @@
+# -----------------------------------------------------------------------------
+# Blk2_MachineParameters.yaml
+#
+# Purpose:
+#   ESPHome configuration for reading and decoding machine parameters (Block 2)
+#   from a Sabiana VMC controller via Modbus. Provides sensors, binary sensors,
+#   and text sensors for various machine parameters, limits, offsets, and settings.
+#
+# Structure:
+#   - Templates for common sensor types (temperature, humidity, voltage, etc.)
+#   - binary_sensor: Parameter flags and blocked function indicators
+#   - text_sensor: UART speed and heater power limit mode
+#   - sensor: Offsets, voltages, speeds, coefficients, setpoints, CO2, RH, etc.
+#   - modbus_controller: Reads and parses the Block 2 register map (address 0x0200)
+#
+# Notes:
+#   - The modbus_controller sensor reads 102 bytes and parses them into the above fields.
+#   - Helper functions like readSigned16ToFloat, readBitFromUns16, etc. are assumed to be defined elsewhere.
+# -----------------------------------------------------------------------------
+
+# Templates per tutti i sensori
+.temperature_sensor: &temperature_sensor
+  icon: mdi:thermometer
+  device_class: "temperature"
+  unit_of_measurement: "°C"
+  accuracy_decimals: 1
+  filters:
+    - filter_out: nan
+    - clamp:
+        min_value: -40
+        max_value: 40
+
+.humidity_sensor: &humidity_sensor
+  icon: mdi:water-percent
+  device_class: "humidity"
+  unit_of_measurement: "%"
+  accuracy_decimals: 1
+  filters:
+    - clamp:
+        min_value: 0
+        max_value: 100
+
+.voltage_sensor: &voltage_sensor
+  icon: mdi:flash
+  device_class: "voltage"
+  unit_of_measurement: "mV"
+  accuracy_decimals: 1
+  state_class: "measurement"
+  filters:
+    - filter_out: nan
+    - clamp:
+        min_value: 0
+        max_value: 500
+
+.bit_sensor: &bit_sensor
+  icon: mdi:checkbox-marked-circle-outline
+
+.rpm_sensor: &rpm_sensor
+  icon: mdi:speedometer
+  unit_of_measurement: "RPM"
+  accuracy_decimals: 0
+  state_class: "measurement"
+  filters:
+    - filter_out: nan
+    - clamp:
+        min_value: 1000
+        max_value: 4000
+
+.percentage_sensor: &percentage_sensor
+  icon: mdi:percent
+  unit_of_measurement: "%"
+  accuracy_decimals: 1
+  state_class: "measurement"
+  filters:
+    - filter_out: nan
+    - clamp:
+        min_value: 0
+        max_value: 100
+
+.k_coefficient: &k_coefficient
+  icon: mdi:fan-speed-1
+  unit_of_measurement: ""
+  accuracy_decimals: 2
+  filters:
+    - filter_out: nan
+    - clamp:
+        min_value: 10
+        max_value: 90
+
+.volume_flow_rate_sensor: &volume_flow_rate_sensor
+  unit_of_measurement: "m³/h"
+  device_class: volume_flow_rate
+  state_class: measurement
+  icon: mdi:fan
+  filters:
+    - filter_out: nan
+    - clamp:
+        min_value: 30
+        max_value: 500
+
+.co2_ppm: &co2_ppm
+  unit_of_measurement: "ppm"
+  device_class: carbon_dioxide
+  state_class: measurement
+  icon: mdi:molecule-co2
+  filters:
+    - filter_out: nan
+    - clamp:
+        min_value: 100
+        max_value: 30000
+
+# Sensori
+
+binary_sensor:
+  - platform: template
+    name: "Blk2 - Stop Mode"
+    id: blk2_stop_mode
+    <<: *bit_sensor
+
+  - platform: template
+    name: "Blk2 - Flush Mode"
+    id: blk2_flush_mode
+    <<: *bit_sensor
+
+  - platform: template
+    name: "Blk2 - Hi RH management"
+    id: blk2_hi_rh_management
+    <<: *bit_sensor
+
+  - platform: template
+    name: "Blk2 - Manual mode not allowed"
+    id: blk2_manual_mode_not_allowed
+    <<: *bit_sensor
+
+  - platform: template
+    name: "Blk2 - Party mode not allowed"
+    id: blk2_party_mode_not_allowed
+    <<: *bit_sensor
+
+  - platform: template
+    name: "Blk2 - Holiday mode not allowed"
+    id: blk2_holiday_mode_not_allowed
+    <<: *bit_sensor
+
+  - platform: template
+    name: "Blk2 - Auto mode not allowed"
+    id: blk2_auto_mode_not_allowed
+    <<: *bit_sensor
+
+  - platform: template
+    name: "Blk2 - Weekly Prog mode not allowed"
+    id: blk2_weekly_prog_mode_not_allowed
+    <<: *bit_sensor
+
+  - platform: template
+    name: "Blk2 - Time/day change not allowed"
+    id: blk2_time_change_not_allowed
+    <<: *bit_sensor
+
+  - platform: template
+    name: "Blk2 - Off command not allowed"
+    id: blk2_off_command_not_allowed
+    <<: *bit_sensor
+
+text_sensor:
+  - platform: template
+    name: "Blk2 - MB Uart speed"
+    id: blk2_mb_uart_speed
+    icon: mdi:speedometer
+
+  - platform: template
+    name: "Blk2 - Heater Power limit mode"
+    id: blk2_heater_power_limit_mode
+    icon: mdi:car-speed-limiter
+
+sensor:
+  - platform: template
+    name: "Blk2 - Temp probe 1 offset"
+    id: blk2_temp_probe_1_offset
+    <<: *temperature_sensor
+
+  - platform: template
+    name: "Blk2 - Temp probe 2 offset"
+    id: blk2_temp_probe_2_offset
+    <<: *temperature_sensor
+
+  - platform: template
+    name: "Blk2 - Temp probe 3 offset"
+    id: blk2_temp_probe_3_offset
+    <<: *temperature_sensor
+
+  - platform: template
+    name: "Blk2 - Temp probe 4 offset"
+    id: blk2_temp_probe_4_offset
+    <<: *temperature_sensor
+
+  - platform: template
+    name: "Blk2 - Fan min voltage"
+    id: blk2_fan_min_voltage
+    <<: *voltage_sensor
+
+  - platform: template
+    name: "Blk2 - Fan max voltage"
+    id: blk2_fan_max_voltage
+    <<: *voltage_sensor
+
+  - platform: template
+    name: "Blk2 - Fan1 Nominal V drive"
+    id: blk2_fan1_nominal_v_drive
+    <<: *voltage_sensor
+
+  - platform: template
+    name: "Blk2 - Fan2 Nominal V drive"
+    id: blk2_fan2_nominal_v_drive
+    <<: *voltage_sensor
+
+  - platform: template
+    name: "Blk2 - Fan min speed"
+    id: blk2_fan_min_speed
+    <<: *rpm_sensor
+    filters:
+      - clamp:
+          min_value: 200
+
+  - platform: template
+    name: "Blk2 - Fan max speed"
+    id: blk2_fan_max_speed
+    <<: *rpm_sensor
+
+  - platform: template
+    name: "Blk2 - Fan1 Nominal speed"
+    id: blk2_fan1_nominal_speed
+    <<: *rpm_sensor
+
+  - platform: template
+    name: "Blk2 - Fan2 Nominal speed"
+    id: blk2_fan2_nominal_speed
+    <<: *rpm_sensor
+
+  - platform: template
+    name: "Blk2 - Fan1 installation speed"
+    id: blk2_fan1_installation_speed
+    <<: *rpm_sensor
+
+  - platform: template
+    name: "Blk2 - K coefficient 1"
+    id: blk2_k_coefficient_1
+    <<: *k_coefficient
+
+  - platform: template
+    name: "Blk2 - K coefficient 2"
+    id: blk2_k_coefficient_2
+    <<: *k_coefficient
+
+  - platform: template
+    name: "Blk2 - Air flow 1"
+    id: blk2_air_flow_1
+    <<: *volume_flow_rate_sensor
+
+  - platform: template
+    name: "Blk2 - Air flow 2"
+    id: blk2_air_flow_2
+    <<: *volume_flow_rate_sensor
+
+  - platform: template
+    name: "Blk2 - Manual speed"
+    id: blk2_manual_speed
+    icon: mdi:car-shift-pattern
+    filters:
+      - filter_out: nan
+      - clamp:
+          min_value: 1
+          max_value: 4
+
+  - platform: template
+    name: "Blk2 - Speed 1 %"
+    id: blk2_speed_1_percentage
+    <<: *percentage_sensor
+    accuracy_decimals: 0
+    filters:
+      - filter_out: nan
+      - clamp:
+          min_value: 0
+          max_value: 35
+
+  - platform: template
+    name: "Blk2 - Speed 2 %"
+    id: blk2_speed_2_percentage
+    <<: *percentage_sensor
+    accuracy_decimals: 0
+    filters:
+      - filter_out: nan
+      - clamp:
+          min_value: 35
+          max_value: 70
+
+  - platform: template
+    name: "Blk2 - Speed 3 %"
+    id: blk2_speed_3_percentage
+    <<: *percentage_sensor
+    accuracy_decimals: 0
+    filters:
+      - filter_out: nan
+      - clamp:
+          min_value: 45
+          max_value: 100
+
+  - platform: template
+    name: "Blk2 - Speed 4 %"
+    id: blk2_speed_4_percentage
+    <<: *percentage_sensor
+    accuracy_decimals: 0
+    filters:
+      - filter_out: nan
+      - clamp:
+          min_value: 100
+          max_value: 110
+
+  - platform: template
+    name: "Blk2 - Boost speed %"
+    id: blk2_boost_speed_percentage
+    <<: *percentage_sensor
+    accuracy_decimals: 0
+    filters:
+      - filter_out: nan
+      - clamp:
+          min_value: 110
+          max_value: 130
+
+  - platform: template
+    name: "Blk2 - Summer T setpoint"
+    id: blk2_summer_t_setpoint
+    <<: *temperature_sensor
+    icon: mdi:sun-thermometer
+    filters:
+      - filter_out: nan
+      - clamp:
+          min_value: 10
+          max_value: 30
+
+  - platform: template
+    name: "Blk2 - Winter T setpoint"
+    id: blk2_winter_t_setpoint
+    <<: *temperature_sensor
+    icon: mdi:snowflake-thermometer
+
+  - platform: template
+    name: "Blk2 - Air coefficients recalc. interval"
+    id: blk2_air_coefficients
+    icon: mdi:clock-outline
+    unit_of_measurement: "min"
+    accuracy_decimals: 0
+    device_class: "duration"
+    state_class: "measurement"
+    filters:
+      - filter_out: nan
+      - clamp:
+          min_value: 1
+          max_value: 15
+
+  - platform: template
+    name: "Blk2 - Temp for free cooling"
+    id: blk2_temp_for_free_cooling
+    <<: *temperature_sensor
+    filters:
+      - filter_out: nan
+      - clamp:
+          min_value: 10
+          max_value: 35
+
+  - platform: template
+    name: "Blk2 - Temp for free heating"
+    id: blk2_temp_for_free_heating
+    <<: *temperature_sensor
+    filters:
+      - filter_out: nan
+      - clamp:
+          min_value: 10
+          max_value: 30
+
+  - platform: template
+    name: "Blk2 - Fan2 unbalance %"
+    id: blk2_fan2_unbalance_percentage
+    <<: *percentage_sensor
+    accuracy_decimals: 0
+    filters:
+      - filter_out: nan
+      # - clamp:
+      #     min_value: -20
+      #     max_value: 20
+
+  - platform: template
+    name: "Blk2 - Humidity samples for setpoint"
+    id: blk2_humidity_samples_for_setpoint
+    icon: mdi:water-percent
+    filters:
+      - filter_out: nan
+      - clamp:
+          min_value: 1
+          max_value: 96
+
+  - platform: template
+    name: "Blk2 - Boost time"
+    id: blk2_boost_time
+    icon: mdi:sun-clock
+    unit_of_measurement: "min"
+    accuracy_decimals: 0
+    device_class: "duration"
+    state_class: "measurement"
+    filters:
+      - filter_out: nan
+      - clamp:
+          min_value: 15
+          max_value: 240
+
+  - platform: template
+    name: "Blk2 - P constant for humidity regulator"
+    id: blk2_p_constant_for_humidity_regulator
+    icon: mdi:water-percent
+    filters:
+      - filter_out: nan
+      - clamp:
+          min_value: 5
+          max_value: 50
+
+  - platform: template
+    name: "Blk2 - Filter life"
+    id: blk2_filter_life
+    icon: mdi:air-filter
+    unit_of_measurement: "day"
+    accuracy_decimals: 0
+    device_class: "duration"
+    state_class: "measurement"
+    filters:
+      - filter_out: nan
+      - clamp:
+          min_value: 30
+          max_value: 400
+
+  - platform: template
+    name: "Blk2 - CO2 ppm min"
+    id: blk2_co2_ppm_min
+    <<: *co2_ppm
+
+  - platform: template
+    name: "Blk2 - CO2 ppm nom"
+    id: blk2_co2_ppm_nom
+    <<: *co2_ppm
+
+  - platform: template
+    name: "Blk2 - CO2 ppm max"
+    id: blk2_co2_ppm_max
+    <<: *co2_ppm
+
+  - platform: template
+    name: "Blk2 - CO2 ppm prop constant"
+    id: blk2_co2_ppm_prop_constant
+    <<: *co2_ppm
+    filters:
+      - filter_out: nan
+      - clamp:
+          min_value: 10
+          max_value: 40
+
+  - platform: template
+    name: "Blk2 - CO2 Sensor PPM Range"
+    id: blk2_co2_sensor_ppm_range
+    <<: *co2_ppm
+
+  - platform: template
+    name: "Blk2 - Boiler boost time"
+    id: blk2_boiler_boost_time
+    icon: mdi:clock-outline
+    unit_of_measurement: "min"
+    accuracy_decimals: 0
+    device_class: "duration"
+    state_class: "measurement"
+    filters:
+      - filter_out: nan
+      - clamp:
+          min_value: 5
+          max_value: 20
+
+  - platform: template
+    name: "Blk2 - RH Low value"
+    id: blk2_rh_low_value
+    <<: *humidity_sensor
+    filters:
+      - filter_out: nan
+      - clamp:
+          min_value: 20
+          max_value: 45
+
+  - platform: template
+    name: "Blk2 - RH Standard value"
+    id: blk2_rh_standard_value
+    <<: *humidity_sensor
+    filters:
+      - filter_out: nan
+      - clamp:
+          min_value: 40
+          max_value: 50
+
+  - platform: template
+    name: "Blk2 - RH Hi value"
+    id: blk2_rh_hi_value
+    <<: *humidity_sensor
+    filters:
+      - filter_out: nan
+      - clamp:
+          min_value: 60
+          max_value: 65
+
+  - platform: template
+    name: "Blk2 - Fan speed with RH low"
+    id: blk2_fan_speed_with_rh_low
+    icon: mdi:car-shift-pattern
+    filters:
+      - filter_out: nan
+      - clamp:
+          min_value: 1
+          max_value: 4
+
+  - platform: template
+    name: "Blk2 - Heater K coefficient"
+    id: blk2_heater_k_coefficient
+    <<: *k_coefficient
+
+  - platform: template
+    name: "Blk2 - Heater PID, P coefficient"
+    id: blk2_heater_p_coefficient
+    <<: *percentage_sensor
+
+  - platform: template
+    name: "Blk2 - Heater PID, I coefficient"
+    id: blk2_heater_i_coefficient
+    <<: *percentage_sensor
+
+  - platform: template
+    name: "Blk2 - Heater PID, D coefficient"
+    id: blk2_heater_d_coefficient
+    <<: *percentage_sensor
+
+  - platform: template
+    name: "Blk2 - T4 value for heater ON"
+    id: blk2_t4_value_for_heater_on
+    <<: *temperature_sensor
+    filters:
+    - filter_out: nan
+    - clamp:
+        min_value: 0
+        max_value: 50
+
+  - platform: modbus_controller
+    modbus_controller_id: sabiana_vmc
+    name: "Block 2 - Machine parameters"
+    address: 0x0200
+    register_type: holding
+    register_count: 51 # 0x232 + 1
+    response_size: 102
+    # cache: false
+    internal: true
+    lambda: |-
+      // ESP_LOGI("modbus", "Vector integrity check:");
+      // ESP_LOGI("modbus", "data.empty() = %s", data.empty() ? "true" : "false");
+      // ESP_LOGI("modbus", "data.capacity() = %zu", data.capacity());
+      // for (size_t i = 0; i < data.size(); i++) {
+      //   ESP_LOGI("modbus", "  data[%zu] = 0x%02X", i, data[i]);
+      // }
+      // ESP_LOGD("modbus", "Update values for Block2");
+
+      if (data.size() != 102) {
+        ESP_LOGW("modbus", "Block 2 - Dimensione risposta errata: %d", data.size());
+        return NAN;
+      }
+
+      // 0x200 Parameters Flags
+      // b0: free
+      bool stop_mode = readBitFromUns16(data, 0, 1);
+      id(blk2_stop_mode).publish_state(stop_mode);
+      ESP_LOGD("modbus", "Block 2 - Stop mode: (bit 0): %d", stop_mode);
+
+      bool flush_mode = readBitFromUns16(data, 0, 2);
+      id(blk2_flush_mode).publish_state(flush_mode);
+      ESP_LOGD("modbus", "Block 2 - Flush mode: (bit 0): %d", flush_mode);
+
+      std::string uart_speed = "Unknown";
+      bool mb_uart_speed = readBitFromUns16(data, 0, 3);
+      ESP_LOGD("modbus", "Block 2 - MB Uart speed: (bit 0): %d", mb_uart_speed);
+      if (mb_uart_speed) {
+        uart_speed = "38400 bps";
+      } else {
+        uart_speed = "9600 bps";
+      }
+      id(blk2_mb_uart_speed).publish_state(uart_speed);
+      ESP_LOGD("modbus", "Block 2 - MB Uart speed: %s", mode.c_str());
+
+      bool hi_rh_management = readBitFromUns16(data, 0, 4);
+      id(blk2_hi_rh_management).publish_state(hi_rh_management);
+      ESP_LOGD("modbus", "Block 2 - Hi RH management: (bit 0): %d", hi_rh_management);
+
+      //b5-15: free
+
+      float temp_probe_1_offset = readSigned16ToFloat(data, 2, Scale::DECIMAL);
+      id(blk2_temp_probe_1_offset).publish_state(temp_probe_1_offset);
+      ESP_LOGD("modbus", "Block 2 - Temp probe 1 offset: %.2f (0x%02X, 0x%02X)", temp_probe_1_offset, data[2], data[3]); // 0x201
+
+      float temp_probe_2_offset = readSigned16ToFloat(data, 4, Scale::DECIMAL);
+      id(blk2_temp_probe_2_offset).publish_state(temp_probe_2_offset);
+      ESP_LOGD("modbus", "Block 2 - Temp probe 2 offset: %.2f (0x%02X, 0x%02X)", temp_probe_2_offset, data[4], data[5]); // 0x202
+
+      float temp_probe_3_offset = readSigned16ToFloat(data, 6, Scale::DECIMAL);
+      id(blk2_temp_probe_3_offset).publish_state(temp_probe_3_offset);
+      ESP_LOGD("modbus", "Block 2 - Temp probe 3 offset: %.2f (0x%02X, 0x%02X)", temp_probe_3_offset, data[6], data[7]); // 0x203
+
+      float temp_probe_4_offset = readSigned16ToFloat(data, 8, Scale::DECIMAL);
+      id(blk2_temp_probe_4_offset).publish_state(temp_probe_4_offset);
+      ESP_LOGD("modbus", "Block 2 - Temp probe 4 offset: %.2f (0x%02X, 0x%02X)", temp_probe_4_offset, data[8], data[9]); // 0x204
+
+      uint16_t fan_min_voltage = readSigned16(data, 10);
+      id(blk2_fan_min_voltage).publish_state(fan_min_voltage);
+      ESP_LOGD("modbus", "Block 2 - Fan min speed: %.2f (0x%02X, 0x%02X)", fan_min_voltage, data[10], data[11]); // 0x205
+
+      uint16_t fan_max_voltage = readSigned16(data, 12);
+      id(blk2_fan_max_voltage).publish_state(fan_max_voltage);
+      ESP_LOGD("modbus", "Block 2 - Fan max speed: %.2f (0x%02X, 0x%02X)", fan_max_voltage, data[12], data[13]); // 0x206
+
+      uint16_t fan1_nominal_v_drive = readSigned16(data, 14);
+      id(blk2_fan1_nominal_v_drive).publish_state(fan1_nominal_v_drive);
+      ESP_LOGD("modbus", "Block 2 - Fan1 nominal speed: %.2f (0x%02X, 0x%02X)", fan1_nominal_v_drive, data[14], data[15]); // 0x207
+
+      uint16_t fan2_nominal_v_drive = readSigned16(data, 16);
+      id(blk2_fan2_nominal_v_drive).publish_state(fan2_nominal_v_drive);
+      ESP_LOGD("modbus", "Block 2 - Fan2 nominal speed: %.2f (0x%02X, 0x%02X)", fan2_nominal_v_drive, data[16], data[17]); // 0x208
+
+      uint16_t fan_min_speed = readSigned16(data, 18);
+      id(blk2_fan_min_speed).publish_state(fan_min_speed);
+      ESP_LOGD("modbus", "Block 2 - Fan 1 min speed: %.2f (0x%02X, 0x%02X)", fan_min_speed, data[18], data[19]); // 0x209
+
+      uint16_t fan_max_speed = readSigned16(data, 20);
+      id(blk2_fan_max_speed).publish_state(fan_max_speed);
+      ESP_LOGD("modbus", "Block 2 - Fan 2 min speed: %.2f (0x%02X, 0x%02X)", fan_max_speed, data[20], data[21]); // 0x20A
+
+      uint16_t fan1_nominal_speed = readSigned16(data, 22);
+      id(blk2_fan1_nominal_speed).publish_state(fan1_nominal_speed);
+      ESP_LOGD("modbus", "Block 2 - Fan1 nominal speed: %.2f (0x%02X, 0x%02X)", fan1_nominal_speed, data[22], data[23]); // 0x20B
+
+      uint16_t fan2_nominal_speed = readSigned16(data, 24);
+      id(blk2_fan2_nominal_speed).publish_state(fan2_nominal_speed);
+      ESP_LOGD("modbus", "Block 2 - Fan2 nominal speed: %.2f (0x%02X, 0x%02X)", fan2_nominal_speed, data[24], data[25]); // 0x20C
+
+      uint16_t fan1_installation_speed = readSigned16(data, 26);
+      id(blk2_fan1_installation_speed).publish_state(fan1_installation_speed);
+      ESP_LOGD("modbus", "Block 2 - Fan1 installation speed: %.2f (0x%02X, 0x%02X)", fan1_installation_speed, data[26], data[27]); // 0x20D
+
+      float k_coefficient_1 = readSigned16ToFloat(data, 28, Scale::CENTESIMAL);
+      id(blk2_k_coefficient_1).publish_state(k_coefficient_1);
+      ESP_LOGD("modbus", "Block 2 - K coefficient 1: %.2f (0x%02X, 0x%02X)", k_coefficient_1, data[28], data[29]); // 0x20E
+
+      float k_coefficient_2 = readSigned16ToFloat(data, 30, Scale::CENTESIMAL);
+      id(blk2_k_coefficient_2).publish_state(k_coefficient_2);
+      ESP_LOGD("modbus", "Block 2 - K coefficient 2: %.2f (0x%02X, 0x%02X)", k_coefficient_2, data[30], data[31]); // 0x20F
+
+      uint16_t air_flow_1 = readSigned16(data, 32);
+      id(blk2_air_flow_1).publish_state(air_flow_1);
+      ESP_LOGD("modbus", "Block 2 - Air flow 1: %.2f (0x%02X, 0x%02X)", air_flow_1, data[32], data[33]); // 0x210
+
+      uint16_t air_flow_2 = readSigned16(data, 34);
+      id(blk2_air_flow_2).publish_state(air_flow_2);
+      ESP_LOGD("modbus", "Block 2 - Air flow 2: %.2f (0x%02X, 0x%02X)", air_flow_2, data[34], data[35]); // 0x211
+
+      uint16_t manual_speed = readSigned16(data, 36);
+      manual_speed++; // Increment to match the 1-4 range
+      id(blk2_manual_speed).publish_state(manual_speed);
+      ESP_LOGD("modbus", "Block 2 - Manual speed: %.2f (0x%02X, 0x%02X)", manual_speed, data[36], data[37]); // 0x212
+
+      uint16_t speed_1_percentage = readSigned16(data, 38);
+      id(blk2_speed_1_percentage).publish_state(speed_1_percentage);
+      ESP_LOGD("modbus", "Block 2 - Speed 1 %: %.2f (0x%02X, 0x%02X)", speed_1_percentage, data[38], data[39]); // 0x213
+
+      uint16_t speed_2_percentage = readSigned16(data, 40);
+      id(blk2_speed_2_percentage).publish_state(speed_2_percentage);
+      ESP_LOGD("modbus", "Block 2 - Speed 2 %: %.2f (0x%02X, 0x%02X)", speed_2_percentage, data[40], data[41]); // 0x214
+
+      uint16_t speed_3_percentage = readSigned16(data, 42);
+      id(blk2_speed_3_percentage).publish_state(speed_3_percentage);
+      ESP_LOGD("modbus", "Block 2 - Speed 3 %: %.2f (0x%02X, 0x%02X)", speed_3_percentage, data[42], data[43]); // 0x215
+
+      uint16_t speed_4_percentage = readSigned16(data, 44);
+      id(blk2_speed_4_percentage).publish_state(speed_4_percentage);
+      ESP_LOGD("modbus", "Block 2 - Speed 4 %: %.2f (0x%02X, 0x%02X)", speed_4_percentage, data[44], data[45]); // 0x216
+
+      uint16_t boost_speed_percentage = readSigned16(data, 46);
+      id(blk2_boost_speed_percentage).publish_state(boost_speed_percentage);
+      ESP_LOGD("modbus", "Block 2 - Boost speed %: %.2f (0x%02X, 0x%02X)", boost_speed_percentage, data[46], data[47]); // 0x217
+
+      float summer_t_setpoint = readSigned16ToFloat(data, 48, Scale::DECIMAL);;
+      id(blk2_summer_t_setpoint).publish_state(summer_t_setpoint);
+      ESP_LOGD("modbus", "Block 2 - Summer T setpoint: %.2f (0x%02X, 0x%02X)", summer_t_setpoint, data[48], data[49]); // 0x218
+
+      float winter_t_setpoint = readSigned16ToFloat(data, 50, Scale::DECIMAL);
+      id(blk2_winter_t_setpoint).publish_state(winter_t_setpoint);
+      ESP_LOGD("modbus", "Block 2 - Winter T setpoint: %.2f (0x%02X, 0x%02X)", winter_t_setpoint, data[50], data[51]); // 0x219
+
+      uint16_t air_coefficients = readSigned16(data, 52);
+      id(blk2_air_coefficients).publish_state(air_coefficients);
+      ESP_LOGD("modbus", "Block 2 - Air coefficients recalc. interval: %.2f (0x%02X, 0x%02X)", air_coefficients, data[52], data[53]); // 0x21A
+
+      float temp_for_free_cooling = readSigned16ToFloat(data, 54, Scale::DECIMAL);
+      id(blk2_temp_for_free_cooling).publish_state(temp_for_free_cooling);
+      ESP_LOGD("modbus", "Block 2 - Temp for free cooling: %.2f (0x%02X, 0x%02X)", temp_for_free_cooling, data[54], data[55]); // 0x21B
+
+      float temp_for_free_heating = readSigned16ToFloat(data, 56, Scale::DECIMAL);
+      id(blk2_temp_for_free_heating).publish_state(temp_for_free_heating);
+      ESP_LOGD("modbus", "Block 2 - Temp for free heating: %.2f (0x%02X, 0x%02X)", temp_for_free_heating, data[56], data[57]); // 0x21C
+
+      uint16_t fan2_unbalance_percentage = readSigned16(data, 58);
+      id(blk2_fan2_unbalance_percentage).publish_state(fan2_unbalance_percentage);
+      ESP_LOGD("modbus", "Block 2 - Fan2 unbalance %: %.2f (0x%02X, 0x%02X)", fan2_unbalance_percentage, data[58], data[59]); // 0x21D
+
+      uint16_t humidity_samples_for_setpoint = readSigned16(data, 60);
+      id(blk2_humidity_samples_for_setpoint).publish_state(humidity_samples_for_setpoint);
+      ESP_LOGD("modbus", "Block 2 - Humidity samples for setpoint: %.2f (0x%02X, 0x%02X)", humidity_samples_for_setpoint, data[60], data[61]); // 0x21E
+
+      uint16_t boost_time = readSigned16(data, 62);
+      id(blk2_boost_time).publish_state(boost_time);
+      ESP_LOGD("modbus", "Block 2 - Boost time: %.2f (0x%02X, 0x%02X)", boost_time, data[62], data[63]); // 0x21F
+
+      uint16_t p_constant_for_humidity_regulator = readSigned16(data, 64);
+      id(blk2_p_constant_for_humidity_regulator).publish_state(p_constant_for_humidity_regulator);
+      ESP_LOGD("modbus", "Block 2 - P constant for humidity regulator: %.2f (0x%02X, 0x%02X)", p_constant_for_humidity_regulator, data[64], data[65]); // 0x220
+
+      uint16_t filter_life = readSigned16(data, 66);
+      id(blk2_filter_life).publish_state(filter_life);
+      ESP_LOGD("modbus", "Block 2 - Filter life: %.2f (0x%02X, 0x%02X)", filter_life, data[66], data[67]); // 0x221
+
+      uint16_t co2_ppm_min = readSigned16(data, 68);
+      id(blk2_co2_ppm_min).publish_state(co2_ppm_min);
+      ESP_LOGD("modbus", "Block 2 - CO2 ppm min: %.2f (0x%02X, 0x%02X)", co2_ppm_min, data[68], data[69]); // 0x222
+
+      uint16_t co2_ppm_nom = readSigned16(data, 70);
+      id(blk2_co2_ppm_nom).publish_state(co2_ppm_nom);
+      ESP_LOGD("modbus", "Block 2 - CO2 ppm nom: %.2f (0x%02X, 0x%02X)", co2_ppm_nom, data[70], data[71]); // 0x223
+
+      uint16_t co2_ppm_max = readSigned16(data, 72);
+      id(blk2_co2_ppm_max).publish_state(co2_ppm_max);
+      ESP_LOGD("modbus", "Block 2 - CO2 ppm_max: %.2f (0x%02X, 0x%02X)", co2_ppm_max, data[72], data[73]); // 0x224
+
+      uint16_t co2_ppm_prop_constant = readSigned16(data, 74);
+      id(blk2_co2_ppm_prop_constant).publish_state(co2_ppm_prop_constant);
+      ESP_LOGD("modbus", "Block 2 - CO2 ppm prop constant: %.2f (0x%02X, 0x%02X)", co2_ppm_prop_constant, data[74], data[75]); // 0x225
+
+      // 0x0226 Blocked functions
+      bool manual_mode_not_allowed = readBitFromUns16(data, 76, 0);
+      id(blk2_manual_mode_not_allowed).publish_state(manual_mode_not_allowed);
+      ESP_LOGD("modbus", "Block 2 - Manual mode not allowed: (bit 0): %d", manual_mode_not_allowed);
+
+      bool party_mode_not_allowed = readBitFromUns16(data, 76, 1);
+      id(blk2_party_mode_not_allowed).publish_state(party_mode_not_allowed);
+      ESP_LOGD("modbus", "Block 2 - Party mode not allowed: (bit 0): %d", party_mode_not_allowed);
+
+      bool holiday_mode_not_allowed = readBitFromUns16(data, 76, 2);
+      id(blk2_holiday_mode_not_allowed).publish_state(holiday_mode_not_allowed);
+      ESP_LOGD("modbus", "Block 2 - Holiday mode not allowed: (bit 0): %d", holiday_mode_not_allowed);
+
+      bool auto_mode_not_allowed = readBitFromUns16(data, 76, 3);
+      id(blk2_auto_mode_not_allowed).publish_state(auto_mode_not_allowed);
+      ESP_LOGD("modbus", "Block 2 - Auto mode not allowed: (bit 0): %d", auto_mode_not_allowed);
+
+      bool weekly_prog_mode_not_allowed = readBitFromUns16(data, 76, 4);
+      id(blk2_weekly_prog_mode_not_allowed).publish_state(weekly_prog_mode_not_allowed);
+      ESP_LOGD("modbus", "Block 2 - Weekly Prog mode not allowed: (bit 0): %d", weekly_prog_mode_not_allowed);
+
+      bool time_change_not_allowed = readBitFromUns16(data, 76, 5);
+      id(blk2_time_change_not_allowed).publish_state(time_change_not_allowed);
+      ESP_LOGD("modbus", "Block 2 - Time/day change not allowed: (bit 0): %d", time_change_not_allowed);
+
+      bool off_command_not_allowed = readBitFromUns16(data, 76, 6);
+      id(blk2_off_command_not_allowed).publish_state(off_command_not_allowed);
+      ESP_LOGD("modbus", "Block 2 - Off command not allowed: (bit 0): %d", off_command_not_allowed);
+
+      uint16_t co2_sensor_ppm_range = readSigned16(data, 78);
+      id(blk2_co2_sensor_ppm_range).publish_state(co2_sensor_ppm_range);
+      ESP_LOGD("modbus", "Block 2 - CO2 sensor PPM Range: %.2f (0x%02X, 0x%02X)", co2_sensor_ppm_range, data[78], data[79]); // 0x227
+
+      uint16_t boiler_boost_time = readSigned16(data, 80);
+      id(blk2_boiler_boost_time).publish_state(boiler_boost_time);
+      ESP_LOGD("modbus", "Block 2 - Boiler boost time: %.2f (0x%02X, 0x%02X)", boiler_boost_time, data[80], data[81]); // 0x228
+
+      float rh_low_value = readSigned16ToFloat(data, 82, Scale::DECIMAL);
+      id(blk2_rh_low_value).publish_state(rh_low_value);
+      ESP_LOGD("modbus", "Block 2 - RH Low value: %.2f (0x%02X, 0x%02X)", rh_low_value, data[82], data[83]); // 0x229
+
+      float rh_standard_value = readSigned16ToFloat(data, 84, Scale::DECIMAL);
+      id(blk2_rh_standard_value).publish_state(rh_standard_value);
+      ESP_LOGD("modbus", "Block 2 - RH Standard value: %.2f (0x%02X, 0x%02X)", rh_standard_value, data[84], data[85]); // 0x22A
+
+      float rh_hi_value = readSigned16ToFloat(data, 86, Scale::DECIMAL);
+      id(blk2_rh_hi_value).publish_state(rh_hi_value);
+      ESP_LOGD("modbus", "Block 2 - RH Hi value: %.2f (0x%02X, 0x%02X)", rh_hi_value, data[86], data[87]); // 0x22B
+
+      uint16_t fan_speed_with_rh_low = readSigned16(data, 88);
+      fan_speed_with_rh_low++; // Increment to match the 1-4 range
+      id(blk2_fan_speed_with_rh_low).publish_state(fan_speed_with_rh_low);
+      ESP_LOGD("modbus", "Block 2 - Fan speed with RH low: %.2f (0x%02X, 0x%02X)", fan_speed_with_rh_low, data[88], data[89]); // 0x22C
+
+      float heater_k_coefficient = readSigned16ToFloat(data, 90, Scale::DECIMAL);
+      id(blk2_heater_k_coefficient).publish_state(heater_k_coefficient);
+      ESP_LOGD("modbus", "Block 2 - Heater K coefficient: %.2f (0x%02X, 0x%02X)", heater_k_coefficient, data[90], data[92]); // 0x22D
+
+      std::string power_limit_mode = "Unknown";
+      uint16_t heater_power_limit_mode = readSigned16(data, 92);
+      ESP_LOGD("modbus", "Block 2 - Heater Power limit mode: %.2f (0x%02X, 0x%02X)", heater_power_limit_mode, data[92], data[93]); // 0x22E
+      if (heater_power_limit_mode == 0) {
+        power_limit_mode = "Limit on RPM";
+      } else {
+        power_limit_mode = "None";
+      }
+      id(blk2_heater_power_limit_mode).publish_state(power_limit_mode);
+      ESP_LOGD("modbus", "Block 2 - Heater Power limit mode: %s", mode.c_str());
+
+      uint16_t heater_p_coefficient = readSigned16(data, 94);
+      id(blk2_heater_p_coefficient).publish_state(heater_p_coefficient);
+      ESP_LOGD("modbus", "Block 2 - Heater PID, P Coefficient: %.2f (0x%02X, 0x%02X)", heater_p_coefficient, data[94], data[95]); // 0x22F
+
+      uint16_t heater_i_coefficient = readSigned16(data, 96);
+      id(blk2_heater_i_coefficient).publish_state(heater_i_coefficient);
+      ESP_LOGD("modbus", "Block 2 - Heater PID, I Coefficient: %.2f (0x%02X, 0x%02X)", heater_i_coefficient, data[96], data[97]); // 0x230
+
+      uint16_t heater_d_coefficient = readSigned16(data, 98);
+      id(blk2_heater_d_coefficient).publish_state(heater_d_coefficient);
+      ESP_LOGD("modbus", "Block 2 - Heater PID, D Coefficient: %.2f (0x%02X, 0x%02X)", heater_d_coefficient, data[98], data[99]); // 0x231
+
+      float t4_value_for_heater_on = readSigned16ToFloat(data, 100, Scale::DECIMAL);
+      id(blk2_t4_value_for_heater_on).publish_state(t4_value_for_heater_on);
+      ESP_LOGD("modbus", "Block 2 - RH Hi value: %.2f (0x%02X, 0x%02X)", t4_value_for_heater_on, data[100], data[101]); // 0x232
+
+      return 1; // Valore dummy per questo sensore

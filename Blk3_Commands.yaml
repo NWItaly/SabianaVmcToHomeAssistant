@@ -1,0 +1,231 @@
+# -----------------------------------------------------------------------------
+# Blk3_Commands.yaml
+#
+# Purpose:
+#   ESPHome configuration for reading and decoding command/status values (Block 3)
+#   from a Sabiana VMC controller via Modbus. Provides sensors, binary sensors,
+#   and text sensors for command states, mode selections, and external values.
+#
+# Structure:
+#   - Templates for common sensor types (humidity, CO2, etc.)
+#   - binary_sensor: Command and mode flags
+#   - text_sensor: Timer program and mode selection
+#   - sensor: Manual speed, external RH/CO2, holiday mode days, etc.
+#   - modbus_controller: Reads and parses the Block 3 register map (address 0x0300)
+#
+# Notes:
+#   - The modbus_controller sensor reads 34 bytes and parses them into the above fields.
+#   - Helper functions like readUnsigned16, readSigned16ToFloat, etc. are assumed to be defined elsewhere.
+# -----------------------------------------------------------------------------
+
+.humidity_sensor: &humidity_sensor
+  icon: mdi:water-percent
+  device_class: "humidity"
+  unit_of_measurement: "%"
+  accuracy_decimals: 1
+  filters:
+    - clamp:
+        min_value: 0
+        max_value: 100
+
+.bit_sensor: &bit_sensor
+  icon: mdi:checkbox-marked-circle-outline
+
+.co2_ppm: &co2_ppm
+  unit_of_measurement: "ppm"
+  device_class: carbon_dioxide
+  state_class: measurement
+  icon: mdi:molecule-co2
+  filters:
+    - filter_out: nan
+    - clamp:
+        min_value: 0
+        max_value: 30000
+
+# Sensori
+
+binary_sensor:
+  - platform: template
+    name: "Blk3 - ON-OFF Command"
+    id: blk3_on_off_command
+    icon: mdi:power
+    <<: *bit_sensor
+
+  - platform: template
+    name: "Blk3 - Mode Command Manual"
+    id: blk3_mode_command_manual
+    <<: *bit_sensor
+
+  - platform: template
+    name: "Blk3 - Mode Command Holiday"
+    id: blk3_mode_command_holiday
+    <<: *bit_sensor
+
+  - platform: template
+    name: "Blk3 - Mode Command Party"
+    id: blk3_mode_command_party
+    <<: *bit_sensor
+
+  - platform: template
+    name: "Blk3 - Mode Command Auto"
+    id: blk3_mode_command_auto
+    <<: *bit_sensor
+
+  - platform: template
+    name: "Blk3 - Mode Command Program"
+    id: blk3_mode_command_program
+    <<: *bit_sensor
+
+text_sensor:
+  - platform: template
+    name: "Blk3 - Timer prog selection"
+    id: blk3_timer_prog_selection
+    icon: mdi:format-list-bulleted
+
+  - platform: template
+    name: "Blk3 - Mode selection"
+    id: blk3_mode_selection
+    icon: mdi:format-list-bulleted
+
+sensor:
+  - platform: template
+    name: "Blk3 - Manual speed"
+    id: blk3_manual_speed
+    icon: mdi:car-shift-pattern
+    filters:
+      - filter_out: nan
+      - clamp:
+          min_value: 1
+          max_value: 4
+
+  - platform: template
+    name: "Blk3 - External RH Value"
+    id: blk3_external_rh_value
+    <<: *humidity_sensor
+    filters:
+      - filter_out: nan
+      - clamp:
+          min_value: 0
+          max_value: 100
+
+  - platform: template
+    name: "Blk3 - External CO2 Value"
+    id: blk3_external_co2_value
+    <<: *co2_ppm
+
+  - platform: template
+    name: "Blk3 - Set Holiday mode days"
+    id: blk3_set_holiday_mode_days
+    icon: mdi:calendar-today
+    unit_of_measurement: "day"
+    accuracy_decimals: 0
+    device_class: "duration"
+    state_class: "measurement"
+    filters:
+      - filter_out: nan
+      - clamp:
+          min_value: 1
+          max_value: 60
+
+  - platform: modbus_controller
+    modbus_controller_id: sabiana_vmc
+    name: "Block 3 - Commands"
+    address: 0x0300
+    register_type: holding
+    register_count: 17 # 0x310 + 1
+    response_size: 34
+    # cache: false
+    internal: true
+    lambda: |-
+      // ESP_LOGI("modbus", "Vector integrity check:");
+      // ESP_LOGI("modbus", "data.empty() = %s", data.empty() ? "true" : "false");
+      // ESP_LOGI("modbus", "data.capacity() = %zu", data.capacity());
+      // for (size_t i = 0; i < data.size(); i++) {
+      //   ESP_LOGI("modbus", "  data[%zu] = 0x%02X", i, data[i]);
+      // }
+      // ESP_LOGD("modbus", "Update values for Block2");
+
+      if (data.size() != 34) {
+        ESP_LOGW("modbus", "Block 3 - Dimensione risposta errata: %d", data.size());
+        return NAN;
+      }
+
+      uint16_t on_off_command = readUnsigned16(data, 0);
+      id(blk3_on_off_command).publish_state(on_off_command == 1 ? true : false);
+      ESP_LOGD("modbus", "Block 3 - ON-OFF Command: %.2f (0x%02X, 0x%02X)", on_off_command, data[0], data[1]); // 0x300
+
+      uint16_t mode_command_manual = readUnsigned16(data, 2);
+      id(blk3_mode_command_manual).publish_state(mode_command_manual == 1 ? true : false);
+      ESP_LOGD("modbus", "Block 3 - Mode Command Manual: %.2f (0x%02X, 0x%02X)", mode_command_manual, data[2], data[3]); // 0x301
+
+      uint16_t mode_command_holiday = readUnsigned16(data, 4);
+      id(blk3_mode_command_holiday).publish_state(mode_command_holiday == 1 ? true : false);
+      ESP_LOGD("modbus", "Block 3 - Mode Command Holiday: %.2f (0x%02X, 0x%02X)", mode_command_holiday, data[4], data[5]); // 0x302
+
+      uint16_t mode_command_party = readUnsigned16(data, 6);
+      id(blk3_mode_command_party).publish_state(mode_command_party == 1 ? true : false);
+      ESP_LOGD("modbus", "Block 3 - Mode Command Party: %.2f (0x%02X, 0x%02X)", mode_command_party, data[6], data[7]); // 0x303
+
+      uint16_t mode_command_auto = readUnsigned16(data, 8);
+      id(blk3_mode_command_auto).publish_state(mode_command_auto == 1 ? true : false);
+      ESP_LOGD("modbus", "Block 3 - Mode Command Auto: %.2f (0x%02X, 0x%02X)", mode_command_auto, data[8], data[9]); // 0x304
+
+      uint16_t mode_command_program = readUnsigned16(data, 10);
+      id(blk3_mode_command_program).publish_state(mode_command_program == 1 ? true : false);
+      ESP_LOGD("modbus", "Block 3 - Mode Command Program: %.2f (0x%02X, 0x%02X)", mode_command_program, data[10], data[11]); // 0x305
+
+      std::string timer_prog_selection = "Unknown";
+      uint16_t timer_prog_selection_raw = readUnsigned16(data, 12);
+      timer_prog_selection = "P" + std::to_string(timer_prog_selection_raw);
+      id(blk3_timer_prog_selection).publish_state(timer_prog_selection);
+      ESP_LOGD("modbus", "Block 3 - Timer prog selection: %s", timer_prog_selection); // 0x306
+
+      std::string mode_selection = "Unknown";
+      uint8_t mode_selection_raw = readUnsigned16(data, 14);
+      ESP_LOGD("modbus", "Mode selection raw value: %d", mode_selection_raw); // 0x307
+      switch(mode_selection_raw) {
+        case 0:
+          mode_selection = "Holiday";
+          break;          
+        case 1:
+          mode_selection = "Auto";
+          break;
+        case 2:
+          mode_selection = "Program";
+          break;
+        case 3:
+          mode_selection = "Manual";
+          break;
+        case 4:
+          mode_selection = "Party";
+          break;
+      }
+      id(blk3_mode_selection).publish_state(mode_selection);
+      ESP_LOGD("modbus", "Block 3 - Mode selection: %s", mode_selection.c_str());
+
+      // 0x308 Parameter reset
+
+      uint16_t manual_speed = readUnsigned16(data, 18);
+      manual_speed++; // Increment to match the 1-4 range
+      id(blk3_manual_speed).publish_state(manual_speed == 1 ? true : false);
+      ESP_LOGD("modbus", "Block 3 - Mode Command Program: %.2f (0x%02X, 0x%02X)", manual_speed, data[18], data[19]); // 0x309
+
+      float external_rh_value = readSigned16ToFloat(data, 20, Scale::DECIMAL);
+      id(blk3_external_rh_value).publish_state(external_rh_value);
+      ESP_LOGD("modbus", "Block 3 - External RH Value: %.2f (0x%02X, 0x%02X)", external_rh_value, data[20], data[21]); // 0x30A
+
+      uint16_t external_co2_value = readUnsigned16(data, 22);
+      id(blk3_external_co2_value).publish_state(external_co2_value);
+      ESP_LOGD("modbus", "Block 3 - External CO2 Value: %.2f (0x%02X, 0x%02X)", external_co2_value, data[22], data[23]); // 0x30B
+
+      // 0x30C Unused
+      // 0x30D Unused
+      // 0x30E Unused
+
+      uint16_t set_holiday_mode_days = readUnsigned16(data, 30);
+      id(blk3_set_holiday_mode_days).publish_state(set_holiday_mode_days);
+      ESP_LOGD("modbus", "Block 3 - Set holiday mode days: %.2f (0x%02X, 0x%02X)", set_holiday_mode_days, data[30], data[31]); // 0x30F
+
+      // 0x310 Reset Filter Counter
+
+      return 1; // Valore dummy per questo sensore
