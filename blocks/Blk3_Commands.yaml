@@ -31,7 +31,7 @@
 .bit_sensor: &bit_sensor
   icon: mdi:checkbox-marked-circle-outline
 
-.co2_ppm: &co2_ppm
+.co2: &co2
   unit_of_measurement: "ppm"
   device_class: carbon_dioxide
   state_class: measurement
@@ -42,54 +42,57 @@
         min_value: 0
         max_value: 30000
 
+substitutions:
+  prefixBlk3: "Blk3 - "
+
 # Sensori
 
 binary_sensor:
   - platform: template
-    name: "Blk3 - ON-OFF Command"
+    name: "${prefixBlk3}ON-OFF Command"
     id: blk3_on_off_command
     icon: mdi:power
     <<: *bit_sensor
 
   - platform: template
-    name: "Blk3 - Mode Command Manual"
+    name: "${prefixBlk3}Mode Command Manual"
     id: blk3_mode_command_manual
     <<: *bit_sensor
 
   - platform: template
-    name: "Blk3 - Mode Command Holiday"
+    name: "${prefixBlk3}Mode Command Holiday"
     id: blk3_mode_command_holiday
     <<: *bit_sensor
 
   - platform: template
-    name: "Blk3 - Mode Command Party"
+    name: "${prefixBlk3}Mode Command Party"
     id: blk3_mode_command_party
     <<: *bit_sensor
 
   - platform: template
-    name: "Blk3 - Mode Command Auto"
+    name: "${prefixBlk3}Mode Command Auto"
     id: blk3_mode_command_auto
     <<: *bit_sensor
 
   - platform: template
-    name: "Blk3 - Mode Command Program"
+    name: "${prefixBlk3}Mode Command Program"
     id: blk3_mode_command_program
     <<: *bit_sensor
 
 text_sensor:
   - platform: template
-    name: "Blk3 - Timer prog selection"
+    name: "${prefixBlk3}Timer prog selection"
     id: blk3_timer_prog_selection
     icon: mdi:format-list-bulleted
 
   - platform: template
-    name: "Blk3 - Mode selection"
+    name: "${prefixBlk3}Mode selection"
     id: blk3_mode_selection
     icon: mdi:format-list-bulleted
 
 sensor:
   - platform: template
-    name: "Blk3 - Manual speed"
+    name: "${prefixBlk3}Manual speed"
     id: blk3_manual_speed
     icon: mdi:car-shift-pattern
     filters:
@@ -99,7 +102,7 @@ sensor:
           max_value: 4
 
   - platform: template
-    name: "Blk3 - External RH Value"
+    name: "${prefixBlk3}External RH Value"
     id: blk3_external_rh_value
     <<: *humidity_sensor
     filters:
@@ -109,12 +112,12 @@ sensor:
           max_value: 100
 
   - platform: template
-    name: "Blk3 - External CO2 Value"
+    name: "${prefixBlk3}External CO2 Value"
     id: blk3_external_co2_value
-    <<: *co2_ppm
+    <<: *co2
 
   - platform: template
-    name: "Blk3 - Set Holiday mode days"
+    name: "${prefixBlk3}Set Holiday mode days"
     id: blk3_set_holiday_mode_days
     icon: mdi:calendar-today
     unit_of_measurement: "day"
@@ -229,3 +232,47 @@ sensor:
       // 0x310 Reset Filter Counter
 
       return 1; // Valore dummy per questo sensore
+
+# Switches to control modes and functions
+switch:
+
+  - platform: template
+    name: "VMC Power"
+    id: blk3_on_off_command_switch
+    lambda: |-
+      return id(blk3_on_off_command_number).state > 0;
+    turn_on_action:
+      - number.set:
+          id: blk3_on_off_command_number
+          value: 1
+    turn_off_action:
+      - number.set:
+          id: blk3_on_off_command_number  
+          value: 0
+
+number:
+  - platform: modbus_controller
+    modbus_controller_id: sabiana_vmc
+    name: "VMC Power Control"
+    id: blk3_on_off_command_number
+    register_type: holding
+    address: 0x0300
+    min_value: 0
+    max_value: 1
+    step: 1
+    value_type: U_WORD
+    internal: true
+
+select:
+  - platform: modbus_controller
+    modbus_controller_id: sabiana_vmc
+    name: "Mode Selection"
+    id: blk3_mode_selection_select
+    address: 0x0307
+    value_type: U_WORD
+    optionsmap:
+      "Holiday": 0
+      "Auto": 1
+      "Program": 2
+      "Manual": 3
+      "Party": 4

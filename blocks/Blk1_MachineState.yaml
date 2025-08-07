@@ -20,7 +20,7 @@
 
 # Templates per tutti i sensori
 .temperature_sensor: &temperature_sensor
-  icon: "mdi:thermometer"
+  icon: mdi:thermometer
   device_class: "temperature"
   unit_of_measurement: "°C"
   accuracy_decimals: 1
@@ -31,7 +31,7 @@
         max_value: 85
 
 .humidity_sensor: &humidity_sensor
-  icon: "mdi:water-percent"
+  icon: mdi:water-percent
   device_class: "humidity"
   unit_of_measurement: "%"
   accuracy_decimals: 1
@@ -50,10 +50,10 @@
   unit_of_measurement: "ppm"
 
 .bit_sensor: &bit_sensor
-  icon: "mdi:checkbox-marked-circle-outline"
+  icon: mdi:checkbox-marked-circle-outline
 
 .rpm_sensor: &rpm_sensor
-  icon: "mdi:speedometer"
+  icon: mdi:speedometer
   unit_of_measurement: "RPM"
   accuracy_decimals: 0
   state_class: "measurement"
@@ -61,7 +61,7 @@
     - filter_out: nan
 
 .percentage_sensor: &percentage_sensor
-  icon: "mdi:percent"
+  icon: mdi:percent
   unit_of_measurement: "%"
   accuracy_decimals: 1
   state_class: "measurement"
@@ -73,404 +73,407 @@
 
 .alarm_sensor: &alarm_sensor
   device_class: "problem"
-  icon: "mdi:alert-circle-outline"
+  icon: mdi:alert-circle-outline
+
+substitutions:
+  prefixBlk1: "Blk1 - "
 
 # Sensori
 
 binary_sensor:
   - platform: template
-    name: "Blk1 - Inverted Configuration"
+    name: "${prefixBlk1}Inverted Configuration"
     id: blk1_inverted_configuration
     <<: *bit_sensor
 
   - platform: template
-    name: "Blk1 - Pre-heating preset"
+    name: "${prefixBlk1}Pre-heating preset"
     id: blk1_preheating_preset
     <<: *bit_sensor
 
   - platform: template
-    name: "Blk1 - Pre-heating with water"
+    name: "${prefixBlk1}Pre-heating with water"
     id: blk1_preheating_with_water
     <<: *bit_sensor
 
   - platform: template
-    name: "Blk1 - Post treatment"
+    name: "${prefixBlk1}Post treatment"
     id: blk1_post_treatment
     <<: *bit_sensor
 
   - platform: template
-    name: "Blk1 - Post treatment also summer"
+    name: "${prefixBlk1}Post treatment also summer"
     id: blk1_post_treatment_summer
     <<: *bit_sensor
 
   - platform: template
-    name: "Blk1 - RL5"
+    name: "${prefixBlk1}RL5"
     id: blk1_post_rl5
     <<: *bit_sensor
 
   - platform: template
-    name: "Blk1 - Pre treatment"
+    name: "${prefixBlk1}Pre treatment"
     id: blk1_pre_treatment
     <<: *bit_sensor
 
   - platform: template
-    name: "Blk1 - IN3 Boiler pressure booter"
+    name: "${prefixBlk1}IN3 Boiler pressure booter"
     id: blk1_boiler_pressure_booster
     <<: *bit_sensor
 
   - platform: template
-    name: "Blk1 - Post treatment external HE"
+    name: "${prefixBlk1}Post treatment external HE"
     id: blk1_post_treatment_external_he
     <<: *bit_sensor
 
   - platform: template
-    name: "Blk1 - Post treatment (True on T2, False on T3)"
+    name: "${prefixBlk1}Post treatment (True on T2, False on T3)"
     id: blk1_post_treatment2
     <<: *bit_sensor
 
   - platform: template
-    name: "Blk1 - Remote OFF active"
+    name: "${prefixBlk1}Remote OFF active"
     id: blk1_remote_off
     <<: *bit_sensor
 
   - platform: template
-    name: "Blk1 - Bypass active"
+    name: "${prefixBlk1}Bypass active"
     id: blk1_bypass
     <<: *bit_sensor
 
   - platform: template
-    name: "Blk1 - Electric Pre Heater active"
+    name: "${prefixBlk1}Electric Pre Heater active"
     id: blk1_electric_pre_heater
     <<: *bit_sensor
 
   - platform: template
-    name: "Blk1 - Water pre-heating active"
+    name: "${prefixBlk1}Water pre-heating active"
     id: blk1_water_pre_heating
     <<: *bit_sensor
 
   - platform: template
-    name: "Blk1 - Boost active"
+    name: "${prefixBlk1}Boost active"
     id: blk1_boost
     <<: *bit_sensor
 
   - platform: template
-    name: "Blk1 - Defrost cycle active"
+    name: "${prefixBlk1}Defrost cycle active"
     id: blk1_defrost_cycle
     <<: *bit_sensor
 
   - platform: template
-    name: "Blk1 - Party Mode ON"
+    name: "${prefixBlk1}Party Mode ON"
     id: blk1_party_mode
     <<: *bit_sensor
 
   - platform: template
-    name: "Blk1 - On/Off"
+    name: "${prefixBlk1}On/Off"
     id: blk1_on
     <<: *bit_sensor
 
   - platform: template
-    name: "Blk1 - Damper Clockwise"
+    name: "${prefixBlk1}Damper Clockwise"
     id: blk1_damper_clockwise
     <<: *bit_sensor
 
   - platform: template
-    name: "Blk1 - Damper Counterclockwise"
+    name: "${prefixBlk1}Damper Counterclockwise"
     id: blk1_damper_counterclockwise
     <<: *bit_sensor
 
   - platform: template
-    name: "Blk1 - RL_FAULT_IAQ"
+    name: "${prefixBlk1}RL_FAULT_IAQ"
     id: blk1_rl_fault_iaq
     <<: *bit_sensor
 
   - platform: template
-    name: "Blk1 - RL_PREHEAT"
+    name: "${prefixBlk1}RL_PREHEAT"
     id: blk1_rl_preheat
     <<: *bit_sensor
 
   - platform: template
-    name: "Blk1 - RL_POSTHEAT"
+    name: "${prefixBlk1}RL_POSTHEAT"
     id: blk1_rl_postheat
     <<: *bit_sensor
 
   - platform: template
-    name: "Blk1 - RL_FANS"
+    name: "${prefixBlk1}RL_FANS"
     id: blk1_rl_fans
     <<: *bit_sensor
 
   - platform: template
-    name: "Blk1 - RL_POSTCOOL/POSTHEAT2"
+    name: "${prefixBlk1}RL_POSTCOOL/POSTHEAT2"
     id: blk1_rl_postcool
     <<: *bit_sensor
 
   - platform: template
-    name: "Blk1 - C1"
+    name: "${prefixBlk1}C1"
     id: blk1_c1
     <<: *bit_sensor
 
   - platform: template
-    name: "Blk1 - C2"
+    name: "${prefixBlk1}C2"
     id: blk1_c2
     <<: *bit_sensor
   
   - platform: template
-    name: "Blk1 - C3"
+    name: "${prefixBlk1}C3"
     id: blk1_c3
     <<: *bit_sensor
 
   - platform: template
-    name: "Blk1 - C4"
+    name: "${prefixBlk1}C4"
     id: blk1_c4
     <<: *bit_sensor
 
   - platform: template
-    name: "Blk1 - T1 probe failure"
+    name: "${prefixBlk1}T1 probe failure"
     id: blk1_t1_probe_failure
     <<: *alarm_sensor
 
   - platform: template
-    name: "Blk1 - T2 probe failure"
+    name: "${prefixBlk1}T2 probe failure"
     id: blk1_t2_probe_failure
     <<: *alarm_sensor
 
   - platform: template
-    name: "Blk1 - T3 probe failure"
+    name: "${prefixBlk1}T3 probe failure"
     id: blk1_t3_probe_failure
     <<: *alarm_sensor
 
   - platform: template
-    name: "Blk1 - T4 probe failure"
+    name: "${prefixBlk1}T4 probe failure"
     id: blk1_t4_probe_failure
     <<: *alarm_sensor
 
   - platform: template
-    name: "Blk1 - Timekeeper failure"
+    name: "${prefixBlk1}Timekeeper failure"
     id: blk1_timekeeper_failure
     <<: *alarm_sensor
 
   - platform: template
-    name: "Blk1 - Frost alarm"
+    name: "${prefixBlk1}Frost alarm"
     id: blk1_frost_alarm_t1
     <<: *alarm_sensor
 
   - platform: template
-    name: "Blk1 - Frost alarm (T2 probe)"
+    name: "${prefixBlk1}Frost alarm (T2 probe)"
     id: blk1_frost_alarm_t2
     <<: *alarm_sensor
 
   - platform: template
-    name: "Blk1 - Fireplace alarm"
+    name: "${prefixBlk1}Fireplace alarm"
     id: blk1_fireplace_alarm
     <<: *alarm_sensor
 
   - platform: template
-    name: "Blk1 - Pressure transducer failure"
+    name: "${prefixBlk1}Pressure transducer failure"
     id: blk1_pressure_transducer_failure
     <<: *alarm_sensor
 
   - platform: template
-    name: "Blk1 - Filter alarm"
+    name: "${prefixBlk1}Filter alarm"
     id: blk1_filter_alarm
     <<: *alarm_sensor
 
   - platform: template
-    name: "Blk1 - Fans failure"
+    name: "${prefixBlk1}Fans failure"
     id: blk1_fans_alarm
     <<: *alarm_sensor
 
   - platform: template
-    name: "Blk1 - RH or CO2 sensor failure"
+    name: "${prefixBlk1}RH or CO2 sensor failure"
     id: blk1_rh_co2_sensor_failure
     <<: *alarm_sensor
 
   - platform: template
-    name: "Blk1 - Fan thermic input alarm"
+    name: "${prefixBlk1}Fan thermic input alarm"
     id: blk1_fan_thermic_input_alarm
     <<: *alarm_sensor
 
   - platform: template
-    name: "Blk1 - Pre heating alarm"
+    name: "${prefixBlk1}Pre heating alarm"
     id: blk1_pre_heating_alarm
     <<: *alarm_sensor
 
   - platform: template
-    name: "Blk1 - Pre frost alarm (T2)"
+    name: "${prefixBlk1}Pre frost alarm (T2)"
     id: blk1_pre_frost_alarm
     <<: *alarm_sensor
 
   - platform: template
-    name: "Blk1 - RPM too high detected"
+    name: "${prefixBlk1}RPM too high detected"
     id: blk1_rpm_too_high_detected
     <<: *bit_sensor
 
   - platform: template
-    name: "Blk1 - IAQ used"
+    name: "${prefixBlk1}IAQ used"
     id: blk1_iaq_used
     <<: *bit_sensor
 
   - platform: template
-    name: "Blk1 - Post treatment used"
+    name: "${prefixBlk1}Post treatment used"
     id: blk1_posttreatment_used
     <<: *bit_sensor
 
   - platform: template
-    name: "Blk1 - HE used"
+    name: "${prefixBlk1}HE used"
     id: blk1_he_used
     <<: *bit_sensor
 
   - platform: template
-    name: "Blk1 - Boiler boost mode used"
+    name: "${prefixBlk1}Boiler boost mode used"
     id: blk1_boiler_boost_mode_used
     <<: *bit_sensor
 
   - platform: template
-    name: "Blk1 - CO2 sensor present"
+    name: "${prefixBlk1}CO2 sensor present"
     id: blk1_co2_sensor_present
     <<: *bit_sensor
 
   - platform: template
-    name: "Blk1 - Differential pressure sensor present"
+    name: "${prefixBlk1}Differential pressure sensor present"
     id: blk1_differential_pressure_sensor_present
     <<: *bit_sensor
 
   - platform: template
-    name: "Blk1 - RH sensor present"
+    name: "${prefixBlk1}RH sensor present"
     id: blk1_rh_sensor_present
     <<: *bit_sensor
 
   - platform: template
-    name: "Blk1 - Reverse mounting"
+    name: "${prefixBlk1}Reverse mounting"
     id: blk1_reverse_mounting
     <<: *bit_sensor
     
 text_sensor:
   - platform: template
-    name: "Blk1 - Mode"
+    name: "${prefixBlk1}Mode"
     id: blk1_mode
-    icon: "mdi:state-machine"
+    icon: mdi:state-machine
 
   - platform: template
-    name: "Blk1 - Season"
+    name: "${prefixBlk1}Season"
     id: blk1_season
-    icon: "mdi:sun-snowflake-variant"
+    icon: mdi:sun-snowflake-variant
 
   - platform: template
-    name: "Blk1 -  Free cooling / Free heating"
+    name: "${prefixBlk1} Free cooling / Free heating"
     id: blk1_free_cooling_heating
     icon: mdi:sun-snowflake
 
 sensor:
   - platform: template
-    name: "Blk1 - Temperature T1"
+    name: "${prefixBlk1}Temperature T1"
     id: blk1_temperature_t1
     <<: *temperature_sensor
 
   - platform: template
-    name: "Blk1 - Temperature T2"
+    name: "${prefixBlk1}Temperature T2"
     id: blk1_temperature_t2
     <<: *temperature_sensor
 
   - platform: template
-    name: "Blk1 - Temperature T3"
+    name: "${prefixBlk1}Temperature T3"
     id: blk1_temperature_t3
     <<: *temperature_sensor
 
   - platform: template
-    name: "Blk1 - Temperature T4"
+    name: "${prefixBlk1}Temperature T4"
     id: blk1_temperature_t4
     <<: *temperature_sensor
 
   - platform: template
-    name: "Blk1 - Program selection"
+    name: "${prefixBlk1}Program selection"
     id: blk1_program_selection
-    icon: "mdi:fan-auto"
+    icon: mdi:fan-auto
 
   - platform: template
-    name: "Blk1 - Humidity setpoint"
+    name: "${prefixBlk1}Humidity setpoint"
     id: blk1_humidity_setpoint
     <<: *humidity_sensor
 
   - platform: template
-    name: "Blk1 - Filter counter divided by 15 minutes"
+    name: "${prefixBlk1}Filter counter divided by 15 minutes"
     id: blk1_filter_counter
     icon: mdi:clock-time-three-outline
 
   - platform: template
-    name: "Blk1 - Fan 1 Speed"
+    name: "${prefixBlk1}Fan 1 Speed"
     id: blk1_fan1_speed
-    icon: "mdi:fan-speed-1"
+    icon: mdi:fan-speed-1
     <<: *rpm_sensor
 
   - platform: template
-    name: "Blk1 - Fan 2 Speed"
+    name: "${prefixBlk1}Fan 2 Speed"
     id: blk1_fan2_speed
-    icon: "mdi:fan-speed-2"
+    icon: mdi:fan-speed-2
     <<: *rpm_sensor
 
   - platform: template
-    name: "Blk1 - Duty cycle fan 1"
+    name: "${prefixBlk1}Duty cycle fan 1"
     id: blk1_duty_fan1
-    icon: "mdi:fan-speed-1"
+    icon: mdi:fan-speed-1
     <<: *percentage_sensor
 
   - platform: template
-    name: "Blk1 - Duty cycle fan 2"
+    name: "${prefixBlk1}Duty cycle fan 2"
     id: blk1_duty_fan2
-    icon: "mdi:fan-speed-2"
+    icon: mdi:fan-speed-2
     <<: *percentage_sensor
 
   - platform: template
-    name: "Blk1 - Duty cycle El. Preheater"
+    name: "${prefixBlk1}Duty cycle El. Preheater"
     id: blk1_duty_fan_el_preheater
-    icon: "mdi:fan"
+    icon: mdi:fan
     <<: *percentage_sensor
 
   - platform: template
-    name: "Blk1 - Diff pressure sensor 1"
+    name: "${prefixBlk1}Diff pressure sensor 1"
     id: blk1_diff_pressure_sensor_1
     <<: *pressure_sensor
 
   - platform: template
-    name: "Blk1 - Diff pressure sensor 2"
+    name: "${prefixBlk1}Diff pressure sensor 2"
     id: blk1_diff_pressure_sensor_2
     <<: *pressure_sensor
 
   - platform: template
-    name: "Blk1 - CO2 reading"
+    name: "${prefixBlk1}CO2 reading"
     id: blk1_co2_reading
     <<: *co2
 
   - platform: template
-    name: "Blk1 - RH reading"
+    name: "${prefixBlk1}RH reading"
     id: blk1_rh_reading
     <<: *humidity_sensor
 
   - platform: template
-    name: "Blk1 - Rho1" # Velocità minima
+    name: "${prefixBlk1}Rho1" # Velocità minima
     id: blk1_rho1
 
   - platform: template
-    name: "Blk1 - Rho2" # Velocità media-bassa
+    name: "${prefixBlk1}Rho2" # Velocità media-bassa
     id: blk1_rho2
 
   - platform: template
-    name: "Blk1 - Rho3" # Velocità media-alta
+    name: "${prefixBlk1}Rho3" # Velocità media-alta
     id: blk1_rho3
 
   - platform: template
-    name: "Blk1 - Rho4" # Velocità massima
+    name: "${prefixBlk1}Rho4" # Velocità massima
     id: blk1_rho4
 
   - platform: template
-    name: "Blk1 - Cspeed1"
+    name: "${prefixBlk1}Cspeed1"
     id: blk1_cspeed1
 
   - platform: template
-    name: "Blk1 - Cspeed2"
+    name: "${prefixBlk1}Cspeed2"
     id: blk1_cspeed2
 
   - platform: template
-    name: "Blk1 - Hours of operation"
+    name: "${prefixBlk1}Hours of operation"
     id: blk1_hours_of_operation
     icon: mdi:counter
     unit_of_measurement: "h"

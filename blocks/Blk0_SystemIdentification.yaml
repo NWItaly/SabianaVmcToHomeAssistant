@@ -21,37 +21,40 @@
 #   - Helper functions like format_version_from_modbus are assumed to be defined elsewhere.
 # -----------------------------------------------------------------------------
 
+substitutions:
+  prefix: "Blk0 - "
+
 text_sensor:
   - platform: template
-    name: "Blk0 - Serial Number"
+    name: "${prefix}Serial Number"
     id: blk0_serial_number
-    icon: "mdi:barcode"
+    icon: mdi:barcode
     entity_category: diagnostic
 
   - platform: template
-    name: "Blk0 - Controller Model"
+    name: "${prefix}Controller Model"
     id: blk0_controller_model
-    icon: "mdi:chip"
+    icon: mdi:chip
     entity_category: diagnostic
     
   - platform: template
-    name: "Blk0 - Firmware Release"
+    name: "${prefix}Firmware Release"
     id: blk0_firmware_release
-    icon: "mdi:file-code"
+    icon: mdi:file-code
     entity_category: diagnostic
     
   - platform: template
-    name: "Blk0 - T-EP Release"
+    name: "${prefix}T-EP Release"
     id: blk0_tep_firmware_release
-    icon: "mdi:file-code"
+    icon: mdi:file-code
     entity_category: diagnostic
     
 sensor: 
       
   - platform: template
-    name: "Blk0 - Protocol Release"
+    name: "${prefix}Protocol Release"
     id: vmc_protocol_release
-    icon: "mdi:protocol"
+    icon: mdi:protocol
     entity_category: diagnostic
 
   - platform: modbus_controller

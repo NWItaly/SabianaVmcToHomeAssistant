@@ -98,7 +98,7 @@
         min_value: 30
         max_value: 500
 
-.co2_ppm: &co2_ppm
+.co2: &co2
   unit_of_measurement: "ppm"
   device_class: carbon_dioxide
   state_class: measurement
@@ -111,111 +111,114 @@
 
 # Sensori
 
+substitutions:
+  prefixBlk2: "Blk2 - "
+
 binary_sensor:
   - platform: template
-    name: "Blk2 - Stop Mode"
+    name: "${prefixBlk2}Stop Mode"
     id: blk2_stop_mode
     <<: *bit_sensor
 
   - platform: template
-    name: "Blk2 - Flush Mode"
+    name: "${prefixBlk2}Flush Mode"
     id: blk2_flush_mode
     <<: *bit_sensor
 
   - platform: template
-    name: "Blk2 - Hi RH management"
+    name: "${prefixBlk2}Hi RH management"
     id: blk2_hi_rh_management
     <<: *bit_sensor
 
   - platform: template
-    name: "Blk2 - Manual mode not allowed"
+    name: "${prefixBlk2}Manual mode not allowed"
     id: blk2_manual_mode_not_allowed
     <<: *bit_sensor
 
   - platform: template
-    name: "Blk2 - Party mode not allowed"
+    name: "${prefixBlk2}Party mode not allowed"
     id: blk2_party_mode_not_allowed
     <<: *bit_sensor
 
   - platform: template
-    name: "Blk2 - Holiday mode not allowed"
+    name: "${prefixBlk2}Holiday mode not allowed"
     id: blk2_holiday_mode_not_allowed
     <<: *bit_sensor
 
   - platform: template
-    name: "Blk2 - Auto mode not allowed"
+    name: "${prefixBlk2}Auto mode not allowed"
     id: blk2_auto_mode_not_allowed
     <<: *bit_sensor
 
   - platform: template
-    name: "Blk2 - Weekly Prog mode not allowed"
+    name: "${prefixBlk2}Weekly Prog mode not allowed"
     id: blk2_weekly_prog_mode_not_allowed
     <<: *bit_sensor
 
   - platform: template
-    name: "Blk2 - Time/day change not allowed"
+    name: "${prefixBlk2}Time/day change not allowed"
     id: blk2_time_change_not_allowed
     <<: *bit_sensor
 
   - platform: template
-    name: "Blk2 - Off command not allowed"
+    name: "${prefixBlk2}Off command not allowed"
     id: blk2_off_command_not_allowed
     <<: *bit_sensor
 
 text_sensor:
   - platform: template
-    name: "Blk2 - MB Uart speed"
+    name: "${prefixBlk2}MB Uart speed"
     id: blk2_mb_uart_speed
     icon: mdi:speedometer
 
   - platform: template
-    name: "Blk2 - Heater Power limit mode"
+    name: "${prefixBlk2}Heater Power limit mode"
     id: blk2_heater_power_limit_mode
     icon: mdi:car-speed-limiter
 
 sensor:
   - platform: template
-    name: "Blk2 - Temp probe 1 offset"
+    name: "${prefixBlk2}Temp probe 1 offset"
     id: blk2_temp_probe_1_offset
     <<: *temperature_sensor
 
   - platform: template
-    name: "Blk2 - Temp probe 2 offset"
+    name: "${prefixBlk2}Temp probe 2 offset"
     id: blk2_temp_probe_2_offset
     <<: *temperature_sensor
 
   - platform: template
-    name: "Blk2 - Temp probe 3 offset"
+    name: "${prefixBlk2}Temp probe 3 offset"
     id: blk2_temp_probe_3_offset
     <<: *temperature_sensor
 
   - platform: template
-    name: "Blk2 - Temp probe 4 offset"
+    name: "${prefixBlk2}Temp probe 4 offset"
     id: blk2_temp_probe_4_offset
     <<: *temperature_sensor
 
   - platform: template
-    name: "Blk2 - Fan min voltage"
+    name: "${prefixBlk2}Fan min voltage"
     id: blk2_fan_min_voltage
     <<: *voltage_sensor
 
   - platform: template
-    name: "Blk2 - Fan max voltage"
+    name: "${prefixBlk2}Fan max voltage"
     id: blk2_fan_max_voltage
     <<: *voltage_sensor
 
   - platform: template
-    name: "Blk2 - Fan1 Nominal V drive"
+    name: "${prefixBlk2}Fan1 Nominal V drive"
     id: blk2_fan1_nominal_v_drive
     <<: *voltage_sensor
 
   - platform: template
-    name: "Blk2 - Fan2 Nominal V drive"
+    name: "${prefixBlk2}Fan2 Nominal V drive"
     id: blk2_fan2_nominal_v_drive
     <<: *voltage_sensor
 
   - platform: template
-    name: "Blk2 - Fan min speed"
+    name: "${prefixBlk2}Fan min speed"
     id: blk2_fan_min_speed
     <<: *rpm_sensor
     filters:
@@ -223,47 +226,47 @@ sensor:
           min_value: 200
 
   - platform: template
-    name: "Blk2 - Fan max speed"
+    name: "${prefixBlk2}Fan max speed"
     id: blk2_fan_max_speed
     <<: *rpm_sensor
 
   - platform: template
-    name: "Blk2 - Fan1 Nominal speed"
+    name: "${prefixBlk2}Fan1 Nominal speed"
     id: blk2_fan1_nominal_speed
     <<: *rpm_sensor
 
   - platform: template
-    name: "Blk2 - Fan2 Nominal speed"
+    name: "${prefixBlk2}Fan2 Nominal speed"
     id: blk2_fan2_nominal_speed
     <<: *rpm_sensor
 
   - platform: template
-    name: "Blk2 - Fan1 installation speed"
+    name: "${prefixBlk2}Fan1 installation speed"
     id: blk2_fan1_installation_speed
     <<: *rpm_sensor
 
   - platform: template
-    name: "Blk2 - K coefficient 1"
+    name: "${prefixBlk2}K coefficient 1"
     id: blk2_k_coefficient_1
     <<: *k_coefficient
 
   - platform: template
-    name: "Blk2 - K coefficient 2"
+    name: "${prefixBlk2}K coefficient 2"
     id: blk2_k_coefficient_2
     <<: *k_coefficient
 
   - platform: template
-    name: "Blk2 - Air flow 1"
+    name: "${prefixBlk2}Air flow 1"
     id: blk2_air_flow_1
     <<: *volume_flow_rate_sensor
 
   - platform: template
-    name: "Blk2 - Air flow 2"
+    name: "${prefixBlk2}Air flow 2"
     id: blk2_air_flow_2
     <<: *volume_flow_rate_sensor
 
   - platform: template
-    name: "Blk2 - Manual speed"
+    name: "${prefixBlk2}Manual speed"
     id: blk2_manual_speed
     icon: mdi:car-shift-pattern
     filters:
@@ -273,7 +276,7 @@ sensor:
           max_value: 4
 
   - platform: template
-    name: "Blk2 - Speed 1 %"
+    name: "${prefixBlk2}Speed 1 %"
     id: blk2_speed_1_percentage
     <<: *percentage_sensor
     accuracy_decimals: 0
@@ -284,7 +287,7 @@ sensor:
           max_value: 35
 
   - platform: template
-    name: "Blk2 - Speed 2 %"
+    name: "${prefixBlk2}Speed 2 %"
     id: blk2_speed_2_percentage
     <<: *percentage_sensor
     accuracy_decimals: 0
@@ -295,7 +298,7 @@ sensor:
           max_value: 70
 
   - platform: template
-    name: "Blk2 - Speed 3 %"
+    name: "${prefixBlk2}Speed 3 %"
     id: blk2_speed_3_percentage
     <<: *percentage_sensor
     accuracy_decimals: 0
@@ -306,7 +309,7 @@ sensor:
           max_value: 100
 
   - platform: template
-    name: "Blk2 - Speed 4 %"
+    name: "${prefixBlk2}Speed 4 %"
     id: blk2_speed_4_percentage
     <<: *percentage_sensor
     accuracy_decimals: 0
@@ -317,7 +320,7 @@ sensor:
           max_value: 110
 
   - platform: template
-    name: "Blk2 - Boost speed %"
+    name: "${prefixBlk2}Boost speed %"
     id: blk2_boost_speed_percentage
     <<: *percentage_sensor
     accuracy_decimals: 0
@@ -328,7 +331,7 @@ sensor:
           max_value: 130
 
   - platform: template
-    name: "Blk2 - Summer T setpoint"
+    name: "${prefixBlk2}Summer T setpoint"
     id: blk2_summer_t_setpoint
     <<: *temperature_sensor
     icon: mdi:sun-thermometer
@@ -339,13 +342,13 @@ sensor:
           max_value: 30
 
   - platform: template
-    name: "Blk2 - Winter T setpoint"
+    name: "${prefixBlk2}Winter T setpoint"
     id: blk2_winter_t_setpoint
     <<: *temperature_sensor
     icon: mdi:snowflake-thermometer
 
   - platform: template
-    name: "Blk2 - Air coefficients recalc. interval"
+    name: "${prefixBlk2}Air coefficients recalc. interval"
     id: blk2_air_coefficients
     icon: mdi:clock-outline
     unit_of_measurement: "min"
@@ -359,7 +362,7 @@ sensor:
           max_value: 15
 
   - platform: template
-    name: "Blk2 - Temp for free cooling"
+    name: "${prefixBlk2}Temp for free cooling"
     id: blk2_temp_for_free_cooling
     <<: *temperature_sensor
     filters:
@@ -369,7 +372,7 @@ sensor:
           max_value: 35
 
   - platform: template
-    name: "Blk2 - Temp for free heating"
+    name: "${prefixBlk2}Temp for free heating"
     id: blk2_temp_for_free_heating
     <<: *temperature_sensor
     filters:
@@ -379,7 +382,7 @@ sensor:
           max_value: 30
 
   - platform: template
-    name: "Blk2 - Fan2 unbalance %"
+    name: "${prefixBlk2}Fan2 unbalance %"
     id: blk2_fan2_unbalance_percentage
     <<: *percentage_sensor
     accuracy_decimals: 0
@@ -390,7 +393,7 @@ sensor:
       #     max_value: 20
 
   - platform: template
-    name: "Blk2 - Humidity samples for setpoint"
+    name: "${prefixBlk2}Humidity samples for setpoint"
     id: blk2_humidity_samples_for_setpoint
     icon: mdi:water-percent
     filters:
@@ -400,7 +403,7 @@ sensor:
           max_value: 96
 
   - platform: template
-    name: "Blk2 - Boost time"
+    name: "${prefixBlk2}Boost time"
     id: blk2_boost_time
     icon: mdi:sun-clock
     unit_of_measurement: "min"
@@ -414,7 +417,7 @@ sensor:
           max_value: 240
 
   - platform: template
-    name: "Blk2 - P constant for humidity regulator"
+    name: "${prefixBlk2}P constant for humidity regulator"
     id: blk2_p_constant_for_humidity_regulator
     icon: mdi:water-percent
     filters:
@@ -424,7 +427,7 @@ sensor:
           max_value: 50
 
   - platform: template
-    name: "Blk2 - Filter life"
+    name: "${prefixBlk2}Filter life"
     id: blk2_filter_life
     icon: mdi:air-filter
     unit_of_measurement: "day"
@@ -438,24 +441,24 @@ sensor:
           max_value: 400
 
   - platform: template
-    name: "Blk2 - CO2 ppm min"
-    id: blk2_co2_ppm_min
-    <<: *co2_ppm
+    name: "${prefixBlk2}CO2 ppm min"
+    id: blk2_co2_min
+    <<: *co2
 
   - platform: template
-    name: "Blk2 - CO2 ppm nom"
-    id: blk2_co2_ppm_nom
-    <<: *co2_ppm
+    name: "${prefixBlk2}CO2 ppm nom"
+    id: blk2_co2_nom
+    <<: *co2
 
   - platform: template
-    name: "Blk2 - CO2 ppm max"
-    id: blk2_co2_ppm_max
-    <<: *co2_ppm
+    name: "${prefixBlk2}CO2 ppm max"
+    id: blk2_co2_max
+    <<: *co2
 
   - platform: template
-    name: "Blk2 - CO2 ppm prop constant"
-    id: blk2_co2_ppm_prop_constant
-    <<: *co2_ppm
+    name: "${prefixBlk2}CO2 ppm prop constant"
+    id: blk2_co2_prop_constant
+    <<: *co2
     filters:
       - filter_out: nan
       - clamp:
@@ -463,12 +466,12 @@ sensor:
           max_value: 40
 
   - platform: template
-    name: "Blk2 - CO2 Sensor PPM Range"
+    name: "${prefixBlk2}CO2 Sensor PPM Range"
     id: blk2_co2_sensor_ppm_range
-    <<: *co2_ppm
+    <<: *co2
 
   - platform: template
-    name: "Blk2 - Boiler boost time"
+    name: "${prefixBlk2}Boiler boost time"
     id: blk2_boiler_boost_time
     icon: mdi:clock-outline
     unit_of_measurement: "min"
@@ -482,7 +485,7 @@ sensor:
           max_value: 20
 
   - platform: template
-    name: "Blk2 - RH Low value"
+    name: "${prefixBlk2}RH Low value"
     id: blk2_rh_low_value
     <<: *humidity_sensor
     filters:
@@ -492,7 +495,7 @@ sensor:
           max_value: 45
 
   - platform: template
-    name: "Blk2 - RH Standard value"
+    name: "${prefixBlk2}RH Standard value"
     id: blk2_rh_standard_value
     <<: *humidity_sensor
     filters:
@@ -502,7 +505,7 @@ sensor:
           max_value: 50
 
   - platform: template
-    name: "Blk2 - RH Hi value"
+    name: "${prefixBlk2}RH Hi value"
     id: blk2_rh_hi_value
     <<: *humidity_sensor
     filters:
@@ -512,7 +515,7 @@ sensor:
           max_value: 65
 
   - platform: template
-    name: "Blk2 - Fan speed with RH low"
+    name: "${prefixBlk2}Fan speed with RH low"
     id: blk2_fan_speed_with_rh_low
     icon: mdi:car-shift-pattern
     filters:
@@ -522,27 +525,27 @@ sensor:
           max_value: 4
 
   - platform: template
-    name: "Blk2 - Heater K coefficient"
+    name: "${prefixBlk2}Heater K coefficient"
     id: blk2_heater_k_coefficient
     <<: *k_coefficient
 
   - platform: template
-    name: "Blk2 - Heater PID, P coefficient"
+    name: "${prefixBlk2}Heater PID, P coefficient"
     id: blk2_heater_p_coefficient
     <<: *percentage_sensor
 
   - platform: template
-    name: "Blk2 - Heater PID, I coefficient"
+    name: "${prefixBlk2}Heater PID, I coefficient"
     id: blk2_heater_i_coefficient
     <<: *percentage_sensor
 
   - platform: template
-    name: "Blk2 - Heater PID, D coefficient"
+    name: "${prefixBlk2}Heater PID, D coefficient"
     id: blk2_heater_d_coefficient
     <<: *percentage_sensor
 
   - platform: template
-    name: "Blk2 - T4 value for heater ON"
+    name: "${prefixBlk2}T4 value for heater ON"
     id: blk2_t4_value_for_heater_on
     <<: *temperature_sensor
     filters:
@@ -734,21 +737,21 @@ sensor:
       id(blk2_filter_life).publish_state(filter_life);
       ESP_LOGD("modbus", "Block 2 - Filter life: %.2f (0x%02X, 0x%02X)", filter_life, data[66], data[67]); // 0x221
 
-      uint16_t co2_ppm_min = readSigned16(data, 68);
-      id(blk2_co2_ppm_min).publish_state(co2_ppm_min);
-      ESP_LOGD("modbus", "Block 2 - CO2 ppm min: %.2f (0x%02X, 0x%02X)", co2_ppm_min, data[68], data[69]); // 0x222
+      uint16_t co2_min = readSigned16(data, 68);
+      id(blk2_co2_min).publish_state(co2_min);
+      ESP_LOGD("modbus", "Block 2 - CO2 ppm min: %.2f (0x%02X, 0x%02X)", co2_min, data[68], data[69]); // 0x222
 
-      uint16_t co2_ppm_nom = readSigned16(data, 70);
-      id(blk2_co2_ppm_nom).publish_state(co2_ppm_nom);
-      ESP_LOGD("modbus", "Block 2 - CO2 ppm nom: %.2f (0x%02X, 0x%02X)", co2_ppm_nom, data[70], data[71]); // 0x223
+      uint16_t co2_nom = readSigned16(data, 70);
+      id(blk2_co2_nom).publish_state(co2_nom);
+      ESP_LOGD("modbus", "Block 2 - CO2 ppm nom: %.2f (0x%02X, 0x%02X)", co2_nom, data[70], data[71]); // 0x223
 
-      uint16_t co2_ppm_max = readSigned16(data, 72);
-      id(blk2_co2_ppm_max).publish_state(co2_ppm_max);
-      ESP_LOGD("modbus", "Block 2 - CO2 ppm_max: %.2f (0x%02X, 0x%02X)", co2_ppm_max, data[72], data[73]); // 0x224
+      uint16_t co2_max = readSigned16(data, 72);
+      id(blk2_co2_max).publish_state(co2_max);
+      ESP_LOGD("modbus", "Block 2 - CO2 ppm_max: %.2f (0x%02X, 0x%02X)", co2_max, data[72], data[73]); // 0x224
 
-      uint16_t co2_ppm_prop_constant = readSigned16(data, 74);
-      id(blk2_co2_ppm_prop_constant).publish_state(co2_ppm_prop_constant);
-      ESP_LOGD("modbus", "Block 2 - CO2 ppm prop constant: %.2f (0x%02X, 0x%02X)", co2_ppm_prop_constant, data[74], data[75]); // 0x225
+      uint16_t co2_prop_constant = readSigned16(data, 74);
+      id(blk2_co2_prop_constant).publish_state(co2_prop_constant);
+      ESP_LOGD("modbus", "Block 2 - CO2 ppm prop constant: %.2f (0x%02X, 0x%02X)", co2_prop_constant, data[74], data[75]); // 0x225
 
       // 0x0226 Blocked functions
       bool manual_mode_not_allowed = readBitFromUns16(data, 76, 0);
@@ -836,3 +839,32 @@ sensor:
       ESP_LOGD("modbus", "Block 2 - RH Hi value: %.2f (0x%02X, 0x%02X)", t4_value_for_heater_on, data[100], data[101]); // 0x232
 
       return 1; // Valore dummy per questo sensore
+
+number:
+  # Free cooling temperature threshold
+  - platform: modbus_controller
+    modbus_controller_id: sabiana_vmc
+    name: "${prefixBlk2}Temp for free cooling - Set"
+    id: blk2_temp_for_free_cooling_set
+    register_type: holding
+    address: 0x021B
+    min_value: 10
+    max_value: 35
+    step: 1
+    unit_of_measurement: "°C"
+    value_type: S_WORD
+    multiply: 10
+
+  # Free heating temperature threshold
+  - platform: modbus_controller
+    modbus_controller_id: sabiana_vmc
+    name: "${prefixBlk2}Temp for free heating - Set"
+    id: blk2_temp_for_free_heating_set
+    register_type: holding
+    address: 0x021C
+    min_value: 10
+    max_value: 30
+    step: 1
+    unit_of_measurement: "°C"
+    value_type: S_WORD
+    multiply: 10
