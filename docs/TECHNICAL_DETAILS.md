@@ -10,7 +10,7 @@ Questa scelta è stata motivata da diversi fattori:
 - **Semplificazione della gestione degli stati:** Gestire i dati letti in blocco permette di avere una visione più coerente dello stato dei registri in un determinato istante, facilitando la logica applicativa e la diagnosi di eventuali problemi.
 - **Scalabilità:** Questo approccio si adatta meglio a scenari in cui il numero di registri da monitorare cresce, evitando un aumento lineare delle chiamate e dei potenziali problemi di sincronizzazione.
 
-Di contro la scrittura dei registri comporta che alcune entity sono duplicate.
+Di contro la scrittura dei registri comporta che alcune entity siano duplicate.
 
 ### Funzionalità specifiche della scheda utilizzata per lo sviluppo
 - Utilizzo ethernet
