@@ -32,8 +32,6 @@ L'autore declina ogni responsabilità per eventuali danni diretti o indiretti de
 
 ### TODO
 I prossimi sviluppi sono (non ordinati):
-- Utilizzare il componente climate per avere una prima interfaccia grafica da utilizzare su HA
-- Pubblicare l'integrazione su HACS
 - Creare un'interfaccia grafica moderna e facile da utilizzare che permetta di modificare la maggior parte dei parametri
 - Supporto MQTT
 - Notifiche avanzate in caso di allarmi o anomalie

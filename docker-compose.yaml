@@ -1,0 +1,14 @@
+services:
+  esphome:
+    container_name: esphome
+    image: ghcr.io/esphome/esphome:stable
+    ports:
+      - "6052:6052"
+    volumes:
+      - ./config:/config
+      - esphome_cache:/config/.esphome
+    environment:
+      - TZ=Europe/Rome
+
+volumes:
+  esphome_cache:

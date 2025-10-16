@@ -1,6 +1,6 @@
 # Dettagli tecnici per sviluppatori
 
-## Scelte progettuali
+## 1. Scelte progettuali
 A causa di problemi riscontrati durante lo sviluppo (caching errato), l'approccio scelto è stato quello di effettuare poche letture di molti registri contemporaneamente.
 
 Questa scelta è stata motivata da diversi fattori:
@@ -12,7 +12,7 @@ Questa scelta è stata motivata da diversi fattori:
 
 Di contro la scrittura dei registri comporta che alcune entity siano duplicate.
 
-### Funzionalità specifiche della scheda utilizzata per lo sviluppo
+### 1.1 Funzionalità specifiche della scheda utilizzata per lo sviluppo
 - Utilizzo ethernet
 - Supporto per RTC hardware
 - LED RGB di stato (disabilitato di default)
@@ -20,34 +20,35 @@ Di contro la scrittura dei registri comporta che alcune entity siano duplicate.
 - Ingressi digitali (disabilitati di default)
 - Relè (disabilitato di default)
 
-### Funzionalità secondarie
+### 1.2 Funzionalità secondarie
 - RTC sincronizzato con HA o con chip interno per mantenere eventuali programmazioni
 - LED indica lo stato di connessione a HA
 - Uptime
 
-## Struttura del progetto
-- **[substitutions.yaml](../substitutions.yaml)**: Variabili modificabili alla bisogna
-- **[main.yaml](../main.yaml)**: Configurazione principale hardware, networking, automazioni di base
-- [config/Blk0_SystemIdentification.yaml](../blocks/Blk0_SystemIdentification.yaml): Identificazione sistema e firmware VMC
-- [blocks/Blk1_MachineState.yaml](../blocks/Blk1_MachineState.yaml.yaml): Stato macchina, sonde, allarmi, modalità
-- [blocks/Blk2_MachineParameters.yaml](../blocks/Blk2_MachineParameters.yaml.yaml): Parametri macchina, limiti, offset, setpoint
-- [blocks/Blk3_Commands.yaml](../blocks/Blk3_Commands.yaml.yaml): Comandi e stato comandi VMC
-- [blocks/Blk4_UserTimerProgram.yaml](../blocks/Blk4_UserTimerProgram.yaml.yaml): Programmi personalizzati dall'utente (da fare)
-- [blocks/Blk8_TimeAndDay.yaml](../blocks/Blk8_TimeAndDay.yaml.yaml): Lettura orario e giorno dalla VMC
-- [climate.yaml](../climate.yaml): Integrazione clima e controlli avanzati (in sviluppo)
-- [modules/modbus_helpers.h](../modbus_helpers.h): Funzioni di supporto per parsing dati Modbus
-- [modules/ethernet.yaml](../modules/ethernet.yaml)/[wifi.yaml](../modules/wifi.yaml): Configurazione metodo di connessione alla rete
-- [modules/buzzer.yaml](../modules/buzzer.yaml): Modulo per gestire un piccolo altoparlante (disabilitato di default)
-- [modules/digital_input.yaml](../modules/digital_input.yaml): Modulo per gestire gli input digitali (disabilitato di default)
-- [modules/led.yaml](../modules/led.yaml): Modulo per gestire il led di stato presente sulla scheda
-- [modules/logger.yaml](../modules/logger.yaml): Configurazione dei log (disabilitare se non necessario)
-- [modules/modbus.yaml](../modules/modbus.yaml): Configurazione del protocollo ModBus
-- [modules/relais.yaml](../modules/relais.yaml): Modulo per gestire i relè (disabilitato di default)
-- [modules/rtc.yaml](../modules/rtc.yaml): Modulo per sincronizzare l'ora con HA
+## 2. Struttura del progetto
+- **[config/substitutions.yaml](../substitutions.yaml)**: Variabili modificabili alla bisogna
+- **[config/main.yaml](../main.yaml)**: Configurazione principale hardware, networking, automazioni di base
+- [config/blocks/Blk0_SystemIdentification.yaml](../blocks/Blk0_SystemIdentification.yaml): Identificazione sistema e firmware VMC
+- [config/blocks/Blk1_MachineState.yaml](../blocks/Blk1_MachineState.yaml.yaml): Stato macchina, sonde, allarmi, modalità
+- [config/blocks/Blk2_MachineParameters.yaml](../blocks/Blk2_MachineParameters.yaml.yaml): Parametri macchina, limiti, offset, setpoint
+- [config/blocks/Blk3_Commands.yaml](../blocks/Blk3_Commands.yaml.yaml): Comandi e stato comandi VMC
+- [config/blocks/Blk4_UserTimerProgram.yaml](../blocks/Blk4_UserTimerProgram.yaml.yaml): Programmi personalizzati dall'utente (da fare)
+- [config/blocks/Blk8_TimeAndDay.yaml](../blocks/Blk8_TimeAndDay.yaml.yaml): Lettura orario e giorno dalla VMC
+- [config/climate.yaml](../climate.yaml): Integrazione clima e controlli avanzati (in sviluppo)
+- [config/modules/modbus_helpers.h](../modbus_helpers.h): Funzioni di supporto per parsing dati Modbus
+- [config/modules/ethernet.yaml](../modules/ethernet.yaml)/[wifi.yaml](../modules/wifi.yaml): Configurazione metodo di connessione alla rete
+- [config/modules/buzzer.yaml](../modules/buzzer.yaml): Modulo per gestire un piccolo altoparlante (disabilitato di default)
+- [config/modules/digital_input.yaml](../modules/digital_input.yaml): Modulo per gestire gli input digitali (disabilitato di default)
+- [config/modules/led.yaml](../modules/led.yaml): Modulo per gestire il led di stato presente sulla scheda
+- [config/modules/logger.yaml](../modules/logger.yaml): Configurazione dei log (disabilitare se non necessario)
+- [config/modules/modbus.yaml](../modules/modbus.yaml): Configurazione del protocollo ModBus
+- [config/modules/relais.yaml](../modules/relais.yaml): Modulo per gestire i relè (disabilitato di default)
+- [config/modules/rtc.yaml](../modules/rtc.yaml): Modulo per sincronizzare l'ora con HA
 
 Per personalizzare il progetto è sufficiente modificare i file indicati in grassetto.
 
-## Il mio ambiente di sviluppo
-- Visual Studio Code
-- Docker lanciando da powershell (come amministratore) il seguente comando:
-`docker run --rm -d --name esphome -v "${PWD}:/config" -v esphome_cache:/config/.esphome -p 6052:6052 ghcr.io/esphome/esphome`. Questo crea il sito [localhost](http://localhost:6052/) da cui è possibile modificare, compilare ed aggiornare l'ESP32. **N.B.**: eseguire il comando nella cartella in cui è presente il codice sorgente
+## 3. Task Explorer
+Ho impostato l'estensione di VS Code affinché sia più agevole generare, avviare ed avviare il container docker.
+
+## 4. Docker
+Configurato affinché la cartella `config` venga copiata nel container e sia molto semplice compilare il firmware.
