@@ -3,6 +3,6 @@ substitutions:
   friendly_name: "VMC Sabiana"
   device_description: "VMC Sabiana ENY-SP-180"
 
-  logger: "INFO"
+  logger: "INFO"  # Livello di log globale (DEBUG, VERBOSE, INFO, WARN, ERROR)
 
   modbus_address: "0x01"  # Indirizzo della VMC (solo pin 1 su ON)

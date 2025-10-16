@@ -11,6 +11,7 @@ l'automazione locale.
 - Integrazione con Home Assistant tramite API nativa ESPHome
 - Automazioni locali per gestione stagionale, modalità rapide, allarmi e notifiche
 - Visualizzazione di stato, allarmi, timer, parametri macchina e identificazione sistema
+- Imposta in automatico ora, minuti e giorno se diversi da quelli di HA (il controllo avviene 1 volta al giorno).
 
 ## 📚 Guide dettagliate
 - 📖 [Guida all'utilizzo](docs/INSTALLATION.md)

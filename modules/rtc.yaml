@@ -1,21 +1,14 @@
-
 # -- Configurazione orario --
 time:
+  - platform: pcf85063
+    update_interval: never
   - platform: homeassistant
     id: ha_time
     timezone: "Europe/Rome"
     on_time_sync:
       then:
-        - pcf85063.write_time:
-            id: rtc_time
-        - lambda: |-
-            ESP_LOGD("rtc_sync", "Orario sincronizzato con Home Assistant");
+        pcf85063.write_time:
 
-  - platform: pcf85063
-    id: rtc_time
-    address: 0x51  # Indirizzo standard PCF85063
-    update_interval: 60s
-    
 # -- Intervalli di controllo --
 interval:
   # Log dell'ora corrente ogni minuto
@@ -23,7 +16,9 @@ interval:
     then:
       - lambda: |-
           auto t_ha = id(ha_time).now();
-          
+         
           if (t_ha.is_valid()) {
             ESP_LOGD("clock", "Ora HA: %s", t_ha.strftime("%Y-%m-%d %H:%M:%S").c_str());
-          }    
+          } else {
+            ESP_LOGW("clock", "Ora HA non valida");
+          }

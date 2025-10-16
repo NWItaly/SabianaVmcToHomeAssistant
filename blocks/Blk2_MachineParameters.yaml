@@ -596,7 +596,7 @@ sensor:
         uart_speed = "9600 bps";
       }
       id(blk2_mb_uart_speed).publish_state(uart_speed);
-      ESP_LOGD("modbus", "Block 2 - MB Uart speed: %s", mode.c_str());
+      ESP_LOGD("modbus", "Block 2 - MB Uart speed: %s", uart_speed.c_str());
 
       bool hi_rh_management = readBitFromUns16(data, 0, 4);
       id(blk2_hi_rh_management).publish_state(hi_rh_management);
@@ -820,7 +820,7 @@ sensor:
         power_limit_mode = "None";
       }
       id(blk2_heater_power_limit_mode).publish_state(power_limit_mode);
-      ESP_LOGD("modbus", "Block 2 - Heater Power limit mode: %s", mode.c_str());
+      ESP_LOGD("modbus", "Block 2 - Heater Power limit mode: %s", power_limit_mode.c_str());
 
       uint16_t heater_p_coefficient = readSigned16(data, 94);
       id(blk2_heater_p_coefficient).publish_state(heater_p_coefficient);

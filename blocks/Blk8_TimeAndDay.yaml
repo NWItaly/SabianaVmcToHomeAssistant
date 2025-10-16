@@ -14,75 +14,66 @@
 #   - Helper functions like readUnsigned16 and str_sprintf are assumed to be defined elsewhere.
 # -----------------------------------------------------------------------------
 
-text_sensor:
-  - platform: template
-    name: "Blk8 - Time"
-    id: blk8_time
-    icon: mdi:calendar-week
-    entity_category: diagnostic
-
-  - platform: template
-    name: "Blk8 - Day"
-    id: blk8_day
-    icon: mdi:calendar-today
-    entity_category: diagnostic
-
-sensor:
+number:
   - platform: modbus_controller
     modbus_controller_id: sabiana_vmc
-    name: "Block 8 - Time and days"
-    address: 0x0800
+    name: "VMC - Hour and Minute"
+    id: blk8_hour_minute
     register_type: holding
-    register_count: 2 # 0x801 + 1
-    response_size: 4
-    # cache: false
+    address: 0x0800
+    value_type: U_WORD
     internal: true
-    lambda: |-
-      // ESP_LOGI("modbus", "Vector integrity check:");
-      // ESP_LOGI("modbus", "data.empty() = %s", data.empty() ? "true" : "false");
-      // ESP_LOGI("modbus", "data.capacity() = %zu", data.capacity());
-      // for (size_t i = 0; i < data.size(); i++) {
-      //   ESP_LOGI("modbus", "  data[%zu] = 0x%02X", i, data[i]);
-      // }
-      // ESP_LOGD("modbus", "Update values for Block2");
 
-      if ((int)data.size() != 4) {
-        ESP_LOGW("modbus", "Block 8 - Dimensione risposta errata: %d", data.size());
-        return NAN;
-      }
+  - platform: modbus_controller
+    modbus_controller_id: sabiana_vmc
+    name: "VMC - Set Day"
+    id: blk8_day
+    register_type: holding
+    address: 0x0801
+    value_type: U_WORD
+    internal: true
 
-      uint16_t time_row = readUnsigned16(data, 0);
-      uint8_t hour = (time_row >> 8) & 0xFF;  // High byte
-      uint8_t minutes = time_row & 0xFF;      // Low byte
-      id(blk8_time).publish_state(str_sprintf("%02d:%02d", hour, minutes));
+interval:
+  - interval: 24h
+    then:
+      - lambda: |-
 
-      std::string day = "Unknown";
-      uint8_t day_raw = readUnsigned16(data, 2);
-      ESP_LOGD("modbus", "Day raw value: %d", day_raw); // 0x801
-      switch(day_raw) {
-        case 1:
-          day = "Monday";
-          break;          
-        case 2:
-          day = "Tuesday";
-          break;
-        case 3:
-          day = "Wednesday";
-          break;
-        case 4:
-          day = "Thursday";
-          break;
-        case 5:
-          day = "Friday";
-          break;
-        case 6:
-          day = "Saturday";
-          break;
-        case 7:
-          day = "Sunday";
-          break;
-      }
-      id(blk8_day).publish_state(day);
-      ESP_LOGD("modbus", "Block 8 - Day: %s", day.c_str());
-      
-      return 1; // Valore dummy per questo sensore
+          uint16_t vmc_hour_minute = id(blk8_hour_minute).state;
+          uint16_t vmc_weekday = id(blk8_day).state;
+
+          uint8_t vmc_hour = (vmc_hour_minute >> 8) & 0xFF;  // High byte
+          uint8_t vmc_minute = vmc_hour_minute & 0xFF;      // Low byte
+
+          ESP_LOGD("modbus", "Block 8 - Local Hour: %02d; Minutes: %02d; Weekday: %02d", vmc_hour, vmc_minute, vmc_weekday);
+
+          // Ottieni ora e giorno attuali dall'ESP
+          auto t = id(ha_time).now();
+          int local_hour = t.hour;
+          int local_minute = t.minute;
+          int local_weekday = t.day_of_week; // 1=Lunedì...7=Domenica
+          ESP_LOGD("modbus", "Block 8 - HA - Hour: %02d; Minutes: %02d; Weekday: %02d;", local_hour, local_minute, local_weekday);
+
+          int vmc_minutes = vmc_hour * 60 + vmc_minute;
+          int local_minutes = local_hour * 60 + local_minutes;
+          int diff = abs(local_minutes - vmc_minutes);
+
+          if (diff > 2 ) {
+            // Prepara nuovo valore per registro 0x0800 (MSB=ora LSB=minuti)
+            uint16_t new_time = ((local_hour & 0xFF) << 8) | (local_minute & 0xFF);
+            // Scrivi ora/minuti
+
+            auto call = id(blk8_hour_minute).make_call();
+            call.set_value(new_time);
+            call.perform();
+            ESP_LOGD("modbus", "Block 8 - Aggiornamento ora/minuti: %02d:%02d (diff=%d)", local_hour, local_minute, diff);
+          }
+
+          if(vmc_weekday != local_weekday) {
+            ESP_LOGD("modbus", "Block 8 - Aggiornamento giorno: %d -> %d", vmc_weekday, local_weekday);
+            // Prepara nuovo valore per registro 0x0801 (giorno della settimana)
+            uint16_t new_day = local_weekday & 0xFF;
+            // Scrivi giorno della settimana
+            auto call = id(blk8_day).make_call();
+            call.set_value(new_day);
+            call.perform();            
+          }
