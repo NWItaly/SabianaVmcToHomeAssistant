@@ -403,20 +403,6 @@ sensor:
           max_value: 96
 
   - platform: template
-    name: "${prefixBlk2}Boost time"
-    id: blk2_boost_time
-    icon: mdi:sun-clock
-    unit_of_measurement: "min"
-    accuracy_decimals: 0
-    device_class: "duration"
-    state_class: "measurement"
-    filters:
-      - filter_out: nan
-      - clamp:
-          min_value: 15
-          max_value: 240
-
-  - platform: template
     name: "${prefixBlk2}P constant for humidity regulator"
     id: blk2_p_constant_for_humidity_regulator
     icon: mdi:water-percent
@@ -724,11 +710,7 @@ sensor:
       uint16_t humidity_samples_for_setpoint = readSigned16(data, 60);
       id(blk2_humidity_samples_for_setpoint).publish_state(humidity_samples_for_setpoint);
       ESP_LOGD("modbus", "Block 2 - Humidity samples for setpoint: %.2f (0x%02X, 0x%02X)", humidity_samples_for_setpoint, data[60], data[61]); // 0x21E
-
-      uint16_t boost_time = readSigned16(data, 62);
-      id(blk2_boost_time).publish_state(boost_time);
-      ESP_LOGD("modbus", "Block 2 - Boost time: %.2f (0x%02X, 0x%02X)", boost_time, data[62], data[63]); // 0x21F
-
+      
       uint16_t p_constant_for_humidity_regulator = readSigned16(data, 64);
       id(blk2_p_constant_for_humidity_regulator).publish_state(p_constant_for_humidity_regulator);
       ESP_LOGD("modbus", "Block 2 - P constant for humidity regulator: %.2f (0x%02X, 0x%02X)", p_constant_for_humidity_regulator, data[64], data[65]); // 0x220
@@ -868,3 +850,17 @@ number:
     unit_of_measurement: "°C"
     value_type: S_WORD
     multiply: 10
+  
+  - platform: modbus_controller
+    modbus_controller_id: sabiana_vmc
+    name: "${prefixBlk2}Boost time"
+    id: blk2_boost_time
+    register_type: holding
+    address: 0x021F
+    min_value: 15
+    max_value: 240
+    step: 1
+    icon: mdi:sun-clock
+    unit_of_measurement: "min"
+    value_type: S_WORD    
+    device_class: "duration"
