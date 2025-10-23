@@ -34,10 +34,9 @@ number:
     internal: true
 
 interval:
-  - interval: 24h
+  - interval: 1h
     then:
       - lambda: |-
-
           uint16_t vmc_hour_minute = id(blk8_hour_minute).state;
           uint16_t vmc_weekday = id(blk8_day).state;
 
@@ -50,7 +49,9 @@ interval:
           auto t = id(ha_time).now();
           int local_hour = t.hour;
           int local_minute = t.minute;
-          int local_weekday = t.day_of_week; // 1=Lunedì...7=Domenica
+          int local_weekday = t.day_of_week; // sunday=1... saturday=7
+          // Map weekday from Sunday=1 to Sunday=7
+          local_weekday = (local_weekday == 1) ? 7 : local_weekday - 1;
           ESP_LOGD("modbus", "Block 8 - HA - Hour: %02d; Minutes: %02d; Weekday: %02d;", local_hour, local_minute, local_weekday);
 
           int vmc_minutes = vmc_hour * 60 + vmc_minute;
