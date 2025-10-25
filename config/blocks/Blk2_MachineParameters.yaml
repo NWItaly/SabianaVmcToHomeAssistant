@@ -413,20 +413,6 @@ sensor:
           max_value: 50
 
   - platform: template
-    name: "${prefixBlk2}Filter life"
-    id: blk2_filter_life
-    icon: mdi:air-filter
-    unit_of_measurement: "day"
-    accuracy_decimals: 0
-    device_class: "duration"
-    state_class: "measurement"
-    filters:
-      - filter_out: nan
-      - clamp:
-          min_value: 30
-          max_value: 400
-
-  - platform: template
     name: "${prefixBlk2}CO2 ppm min"
     id: blk2_co2_min
     <<: *co2
@@ -715,10 +701,6 @@ sensor:
       id(blk2_p_constant_for_humidity_regulator).publish_state(p_constant_for_humidity_regulator);
       ESP_LOGD("modbus", "Block 2 - P constant for humidity regulator: %.2f (0x%02X, 0x%02X)", p_constant_for_humidity_regulator, data[64], data[65]); // 0x220
 
-      uint16_t filter_life = readSigned16(data, 66);
-      id(blk2_filter_life).publish_state(filter_life);
-      ESP_LOGD("modbus", "Block 2 - Filter life: %.2f (0x%02X, 0x%02X)", filter_life, data[66], data[67]); // 0x221
-
       uint16_t co2_min = readSigned16(data, 68);
       id(blk2_co2_min).publish_state(co2_min);
       ESP_LOGD("modbus", "Block 2 - CO2 ppm min: %.2f (0x%02X, 0x%02X)", co2_min, data[68], data[69]); // 0x222
@@ -864,3 +846,18 @@ number:
     unit_of_measurement: "min"
     value_type: S_WORD    
     device_class: "duration"
+
+  - platform: modbus_controller
+    modbus_controller_id: sabiana_vmc
+    name: "${prefixBlk2}Filter life"
+    id: blk2_filter_life        
+    register_type: holding
+    address: 0x0221
+    min_value: 30
+    max_value: 400
+    step: 1
+    icon: mdi:air-filter
+    unit_of_measurement: "day"
+    value_type: S_WORD    
+    device_class: "duration"
+    
