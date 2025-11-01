@@ -245,7 +245,7 @@ switch:
 
 button:
   - platform: template
-    name: "Reset Impostazione"
+    name: "Reset filter counter"
     on_press:
       then:
         - number.set:

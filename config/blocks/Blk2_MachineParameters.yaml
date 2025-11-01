@@ -123,6 +123,7 @@ binary_sensor:
   - platform: template
     name: "${prefixBlk2}Flush Mode"
     id: blk2_flush_mode
+    internal: true
     <<: *bit_sensor
 
   - platform: template
@@ -521,13 +522,14 @@ sensor:
     id: blk2_t4_value_for_heater_on
     <<: *temperature_sensor
     filters:
-    - filter_out: nan
-    - clamp:
-        min_value: 0
-        max_value: 50
+      - filter_out: nan
+      - clamp:
+          min_value: 0
+          max_value: 50
 
   - platform: modbus_controller
     modbus_controller_id: sabiana_vmc
+    id: blk2_machine_parameters
     name: "Block 2 - Machine parameters"
     address: 0x0200
     register_type: holding
@@ -550,6 +552,10 @@ sensor:
       }
 
       // 0x200 Parameters Flags
+      uint16_t parameters_flags = readSigned16(data, 0);
+      id(blk2_parameters_flags) = parameters_flags;
+      ESP_LOGD("modbus", "Block 2 - Parameters Flags: %d", parameters_flags);
+
       // b0: free
       bool stop_mode = readBitFromUns16(data, 0, 1);
       id(blk2_stop_mode).publish_state(stop_mode);
@@ -696,7 +702,7 @@ sensor:
       uint16_t humidity_samples_for_setpoint = readSigned16(data, 60);
       id(blk2_humidity_samples_for_setpoint).publish_state(humidity_samples_for_setpoint);
       ESP_LOGD("modbus", "Block 2 - Humidity samples for setpoint: %.2f (0x%02X, 0x%02X)", humidity_samples_for_setpoint, data[60], data[61]); // 0x21E
-      
+
       uint16_t p_constant_for_humidity_regulator = readSigned16(data, 64);
       id(blk2_p_constant_for_humidity_regulator).publish_state(p_constant_for_humidity_regulator);
       ESP_LOGD("modbus", "Block 2 - P constant for humidity regulator: %.2f (0x%02X, 0x%02X)", p_constant_for_humidity_regulator, data[64], data[65]); // 0x220
@@ -832,7 +838,7 @@ number:
     unit_of_measurement: "°C"
     value_type: S_WORD
     multiply: 10
-  
+
   - platform: modbus_controller
     modbus_controller_id: sabiana_vmc
     name: "${prefixBlk2}Boost time"
@@ -844,13 +850,13 @@ number:
     step: 1
     icon: mdi:sun-clock
     unit_of_measurement: "min"
-    value_type: S_WORD    
+    value_type: S_WORD
     device_class: "duration"
 
   - platform: modbus_controller
     modbus_controller_id: sabiana_vmc
     name: "${prefixBlk2}Filter life"
-    id: blk2_filter_life        
+    id: blk2_filter_life
     register_type: holding
     address: 0x0221
     min_value: 30
@@ -858,6 +864,43 @@ number:
     step: 1
     icon: mdi:air-filter
     unit_of_measurement: "day"
-    value_type: S_WORD    
+    value_type: S_WORD
     device_class: "duration"
-    
+
+globals:
+  - id: blk2_parameters_flags
+    type: uint16_t
+    restore_value: no
+    initial_value: '0'
+
+switch:
+  - platform: template
+    name: "${prefixBlk2}Flush mode"
+    id: blk2_flush_mode_set
+    icon: mdi:weather-windy
+    #optimistic: true
+    lambda: |-
+      return id(blk2_flush_mode).state; // Return the actual state from the binary_sensor
+    turn_on_action:
+      - lambda: |-
+          uint16_t new_value = id(blk2_parameters_flags) | (1 << 2);
+          esphome::modbus_controller::ModbusCommandItem write_cmd = 
+            esphome::modbus_controller::ModbusCommandItem::create_write_single_command(
+              id(sabiana_vmc), 
+              0x0200, 
+              new_value
+            );
+          id(sabiana_vmc)->queue_command(write_cmd);
+          ESP_LOGD("modbus", "Setting Flush mode ON, writing value: 0x%04X to register 200", new_value);
+    turn_off_action:
+      - lambda: |-
+          uint16_t new_value = id(blk2_parameters_flags) & ~(1 << 2);
+          esphome::modbus_controller::ModbusCommandItem write_cmd = 
+            esphome::modbus_controller::ModbusCommandItem::create_write_single_command(
+              id(sabiana_vmc), 
+              0x0200, 
+              new_value
+            );
+          id(sabiana_vmc)->queue_command(write_cmd);
+          ESP_LOGD("modbus", "Setting Flush mode OFF, writing value: 0x%04X to register 200", new_value);
+
