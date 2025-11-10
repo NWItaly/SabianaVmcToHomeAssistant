@@ -18,7 +18,14 @@ modbus:
 
 # Configurazione del controller
 modbus_controller:
+  # Controller principale per Sabiana VMC
   - id: sabiana_vmc
     modbus_id: modbus_sabiana
     address: ${modbus_address}
     update_interval: 30s
+    
+  # Nuovo controller per operazioni a bassa frequenza di aggiornamento
+  - id: sabiana_vmc_schedules #sabiana_vmc_settings
+    modbus_id: modbus_sabiana
+    address: ${modbus_address}
+    update_interval: 10min

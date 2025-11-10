@@ -13,7 +13,7 @@ packages:
   # - !include modules/climate.yaml # Disattivato perché attualmente poco personalizzabile
   # - !include modules/buzzer.yaml # Abilitare in caso di utilizzo del buzzer
   # - !include modules/digital_input.yaml # Abilitare in caso di utilizzo di ingressi digitali
-  # - !include modules/led.yaml # Abilitare in caso di utilizzo del led di stato  
+  # - !include modules/led.yaml # Abilitare in caso di utilizzo del led di stato
   # - !include modules/relais.yaml # Abilitare in caso di utilizzo dei relè
   - !include modules/rtc.yaml # Abilitare in caso si voglia utilizzare il chip RTC
 
@@ -25,6 +25,7 @@ esphome:
   name_add_mac_suffix: false
   includes:
     - modbus_helpers.h
+    - Blk4_UserTimerProgram.h
 
 esp32:
   board: esp32-s3-devkitc-1
@@ -60,7 +61,7 @@ i2c:
   scl: GPIO41
   sda: GPIO42
   scan: true
-  frequency: 100kHz  # Frequenza standard per DS3231
+  frequency: 100kHz # Frequenza standard per DS3231
 
 # -- Dispositivo I2C DS3231 --
 i2c_device:
@@ -75,7 +76,6 @@ button:
 
 # -- Configurazione sensori --
 sensor:
-
   # Uptime del sistema
   - platform: uptime
     name: "Uptime"
