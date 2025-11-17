@@ -10,22 +10,22 @@ uart:
       direction: BOTH
       dummy_receiver: false
 
-# Configurazione Modbus protocol
+# Modbus protocol configuration
 modbus:
   - id: modbus_sabiana
     uart_id: modbus_uart
-    send_wait_time: 200ms
+    send_wait_time: 310ms
 
-# Configurazione del controller
+# Controller configuration
 modbus_controller:
-  # Controller principale per Sabiana VMC
+  # Main controller for Sabiana VMC
   - id: sabiana_vmc
     modbus_id: modbus_sabiana
     address: ${modbus_address}
     update_interval: 30s
-    
-  # Nuovo controller per operazioni a bassa frequenza di aggiornamento
+
+  # Controller for low frequency operation
   - id: sabiana_vmc_schedules #sabiana_vmc_settings
     modbus_id: modbus_sabiana
     address: ${modbus_address}
-    update_interval: 10min
+    update_interval: never #10min never polling automatically

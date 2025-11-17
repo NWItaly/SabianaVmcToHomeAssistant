@@ -26,6 +26,12 @@ esphome:
   includes:
     - modbus_helpers.h
     - Blk4_UserTimerProgram.h
+  on_boot:
+    priority: -100 # Esegui dopo che tutto è inizializzato
+    then:
+      - delay: 5s
+      - lambda: |-
+          id(sabiana_vmc_schedules)->update();
 
 esp32:
   board: esp32-s3-devkitc-1
