@@ -1,0 +1,23 @@
+# Estende il container ESPHome con Google Test
+FROM ghcr.io/esphome/esphome:stable
+
+# Installa Google Test e dipendenze per compilare test C++
+RUN apt-get update && apt-get install -y \
+    libgtest-dev \
+    libgmock-dev \
+    cmake \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
+# Compila Google Test (in alcune distro serve questo step)
+RUN cd /usr/src/gtest && \
+    cmake . && \
+    make && \
+    cp lib/*.a /usr/lib || cp *.a /usr/lib
+
+RUN cd /usr/src/gmock && \
+    cmake . && \
+    make && \
+    cp lib/*.a /usr/lib || cp *.a /usr/lib || true
+
+WORKDIR /config

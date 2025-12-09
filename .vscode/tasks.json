@@ -2,34 +2,106 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "Docker - Avvia",
+            "label": "Docker development - Start",
             "type": "shell",
-            "command": "docker compose up -d",
+            "command": "docker-compose",
+            "args": [
+                "-f",
+                "docker-compose.yaml",
+                "up",
+                "-d",
+                "esphome"
+            ],
             "problemMatcher": []
         },
         {
-            "label": "Docker - Ferma",
+            "label": "Docker development - Stop",
             "type": "shell",
-            "command": "docker compose down",
+            "command": "docker-compose",
+            "args": [
+                "-f",
+                "docker-compose.yaml",
+                "down"
+            ],
             "problemMatcher": []
         },
         {
-            "label": "Docker - Riavvia",
+            "label": "Docker development - EspHome version",
             "type": "shell",
-            "command": "docker compose restart",
+            "command": "docker",
+            "args": [
+                "exec",
+                "-it",
+                "esphome",
+                "esphome",
+                "version"
+            ],
             "problemMatcher": []
         },
         {
-            "label": "Docker - Log in tempo reale",
+            "label": "Docker development - Reboot",
             "type": "shell",
-            "command": "docker compose logs -f esphome",
+            "command": "docker-compose",
+            "args": [
+                "restart"
+            ],
             "problemMatcher": []
         },
         {
-            "label": "Docker - Aggiorna immagine",
+            "label": "Docker development - Log in real-time",
             "type": "shell",
-            "command": "docker compose pull && docker compose up -d",
+            "command": "docker-compose",
+            "args": [
+                "logs",
+                "-f",
+                "esphome"
+            ],
             "problemMatcher": []
-        }
+        },
+        {
+            "label": "Docker development - Update the container image and restart",
+            "type": "shell",
+            "command": "docker-compose pull && docker compose up -d",
+            "problemMatcher": []
+        },
+        {
+            "label": "Docker test - Run all tests",
+            "type": "shell",
+            "command": "docker-compose",
+            "args": [
+                "-f",
+                "docker-compose.yaml",
+                "--profile",
+                "test",
+                "run",
+                "--rm",
+                "esphome-test"
+            ],
+            "problemMatcher": [],
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": true,
+                "panel": "shared",
+                "showReuseMessage": false,
+                "clear": true
+            },
+            "group": {
+                "kind": "test",
+                "isDefault": true
+            }
+        },
+        {
+            "label": "Docker test - Start",
+            "type": "shell",
+            "command": "docker-compose",
+            "args": [
+                "-f",
+                "docker-compose.yaml",
+                "build",
+                "esphome-test"
+            ],
+            "problemMatcher": []
+        },        
     ]
 }

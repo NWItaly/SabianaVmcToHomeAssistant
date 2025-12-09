@@ -10,5 +10,18 @@ services:
     environment:
       - TZ=Europe/Rome
 
+  esphome-test:
+    build:
+      context: .
+      dockerfile: Dockerfile.test
+    volumes:
+      - ./config:/config
+      - ./tests:/tests
+    working_dir: /tests
+    entrypoint: ["/bin/bash", "-lc"]
+    command: "/tests/build_and_test.sh"
+    profiles:
+      - test  # Questo container si avvia SOLO quando richiesto esplicitamente
+
 volumes:
   esphome_cache:

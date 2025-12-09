@@ -240,3 +240,46 @@ api:
         - logger.log: "Refreshing all schedule programs"
         - lambda: |-
             id(sabiana_vmc_schedules)->update();
+    
+    - service: blk4_user_timer_program_write
+      variables:
+        program_number: int    # 1-4
+        day1_json: string
+        day2_json: string
+        day3_json: string
+        day4_json: string
+        day5_json: string
+        day6_json: string
+        day7_json: string
+      then:
+        - lambda: |-
+            ESP_LOGI("write_schedule", "Writing program %d", program_number);
+            
+            // Calcola indirizzo base
+            uint16_t base_addr;
+            switch (program_number) {
+              case 1: base_addr = 0x0400; break;
+              case 2: base_addr = 0x0500; break;
+              case 3: base_addr = 0x0600; break;
+              case 4: base_addr = 0x0700; break;
+              default:
+                ESP_LOGE("write_schedule", "Invalid program: %d", program_number);
+                return;
+            }
+            
+            // Crea array con i 7 giorni
+            std::vector<std::string> days;
+            days.push_back(day1_json);
+            days.push_back(day2_json);
+            days.push_back(day3_json);
+            days.push_back(day4_json);
+            days.push_back(day5_json);
+            days.push_back(day6_json);
+            days.push_back(day7_json);
+            
+            // Scrivi tutto
+            if (write_complete_schedule(id(sabiana_vmc_schedules), base_addr, days)) {
+              ESP_LOGI("write_schedule", "SUCCESS");
+            } else {
+              ESP_LOGE("write_schedule", "FAILED");
+            }

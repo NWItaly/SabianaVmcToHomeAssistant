@@ -30,9 +30,11 @@ L'autore declina ogni responsabilità per eventuali danni diretti o indiretti de
 - [Docker](https://www.docker.com/)
 - [Visual Studio Code](https://code.visualstudio.com/)
 
+## Test
+Implementato alcuni test per evitare regressioni ed assicurarmi che il codice caricato non possa danneggiare la VMC. [Documentazione](tests/README.md)
+
 ### TODO
 I prossimi sviluppi sono (non ordinati):
-- Creare un'interfaccia grafica moderna e facile da utilizzare che permetta di modificare la maggior parte dei parametri
 - Supporto MQTT
 - Notifiche avanzate in caso di allarmi o anomalie
 - Integrazione con sensori esterni
@@ -44,3 +46,6 @@ I prossimi sviluppi sono (non ordinati):
 
 ---
 ⭐ **Ti piace il progetto?** Metti una stella! Aiuta altri utenti a trovarlo.
+
+## Disclaimer
+Ho fatto largo uso di AI per aiutarmi nella scrittura dell'intero progetto. Ho usato Perplexity, ChatGPT e Claude.
