@@ -903,4 +903,3 @@ switch:
             );
           id(sabiana_vmc)->queue_command(write_cmd);
           ESP_LOGD("modbus", "Setting Flush mode OFF, writing value: 0x%04X to register 200", new_value);
-

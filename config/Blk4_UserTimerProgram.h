@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include <vector>
+#include <span>
 
 inline bool is_valid_time(uint16_t time_value)
 {
@@ -15,7 +16,7 @@ inline bool is_valid_speed(uint16_t speed)
 }
 
 // Genera JSON per un singolo giorno (1-7)
-inline std::string parse_user_timer_program(const std::vector<uint8_t> &data, int program, int day_number)
+inline std::string parse_user_timer_program(std::span<const uint8_t> data, int program, int day_number)
 {
 
   int day = day_number - 1; // Converti da 1-7 a 0-6

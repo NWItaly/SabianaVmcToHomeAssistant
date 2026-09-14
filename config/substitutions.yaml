@@ -1,6 +1,6 @@
 substitutions:
-  device_name: "vmc-sabiana"
-  friendly_name: "VMC Sabiana"
+  device_name: "esp32-solaio"
+  friendly_name: "Esp32-Solaio"
   device_description: "VMC Sabiana ENY-SP-180"
 
   logger: "INFO"  # Livello di log globale (DEBUG, VERBOSE, INFO, WARN, ERROR)

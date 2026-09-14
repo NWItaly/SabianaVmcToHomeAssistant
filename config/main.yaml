@@ -23,6 +23,9 @@ esphome:
   comment: ${device_description}
   min_version: 2025.11.0
   name_add_mac_suffix: false
+  project:
+    name: "nwitaly.sabianavmc-esp32s3-eth"
+    version: "1.0.0"
   includes:
     - modbus_helpers.h
     - Blk4_UserTimerProgram.h
