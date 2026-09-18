@@ -531,11 +531,7 @@ sensor:
     modbus_controller_id: sabiana_vmc
     id: blk2_machine_parameters
     name: "Block 2 - Machine parameters"
-    address: 0x0200
-    register_type: holding
-    register_count: 51 # 0x232 + 1
-    response_size: 102
-    # cache: false
+    custom_pdu: [0x03, 0x02, 0x00, 0x00, 0x33]
     internal: true
     lambda: |-
       // ESP_LOGI("modbus", "Vector integrity check:");

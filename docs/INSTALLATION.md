@@ -6,6 +6,9 @@
 5. Integra il dispositivo in Home Assistant
 6. Personalizza automazioni e dashboard secondo le tue esigenze
 
+N.B.: con la versione 2026.8 HA ha introdotto la possibilità di modificare come vengono generati gli ID delle nuove entità.
+Le impostazioni predefinite di HA rompono la compatibilità con card (vedi altro progetto) perché il nome delle entità è calcolato diversamente rispetto a quello dei servizi. Si consiglia quindi di rimuovere temporaneamente il primo elemento "zona" dalla sezione "Sistema - Formato ID entità", aggiungere il dispositivo (punto 5) e successivamente ripristinare le impostazioni di default. In questo modo il nome delle entità e dei servizi risulterà coerente e la card funzionerà correttamente.
+
 ## Personalizzazione
 - Ho suddiviso ogni sezione in modo che sia facilmente utilizzabile e che sia semplice rimuovere le parti che non interessano.
 - Per utilizzare il WiFi è necessario togliere il commento nel file `main.yaml` al package `wifi.yaml` e commentare `ethernet.yaml`.

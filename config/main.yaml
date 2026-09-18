@@ -21,7 +21,6 @@ esphome:
   name: ${device_name}
   friendly_name: ${friendly_name}
   comment: ${device_description}
-  min_version: 2025.11.0
   name_add_mac_suffix: false
   project:
     name: "nwitaly.sabianavmc-esp32s3-eth"
@@ -63,7 +62,7 @@ api:
 # -- Abilita gli aggiornamenti Over-the-Air (OTA) --
 ota:
   - platform: esphome
-    password: !secret ota_password
+    encryption:
 
 # -- Configurazione I2C per RTC e chip di espansione --
 i2c:

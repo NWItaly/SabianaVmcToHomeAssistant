@@ -22,9 +22,6 @@ substitutions:
 
 .raw_user_timer_program: &raw_user_timer_program
   modbus_controller_id: sabiana_vmc_schedules
-  register_type: holding
-  register_count: 119
-  response_size: 238
   internal: true
   value_type: U_WORD
 .text_user_timer_program: &text_user_timer_program
@@ -35,7 +32,7 @@ sensor:
   - platform: modbus_controller
     id: blk4_user_timer_program_1
     name: "${prefixBlk4} User Timer Program 1 Data"
-    address: 0x0400
+    custom_pdu: [0x03, 0x04, 0x00, 0x00, 0x77]
     <<: *raw_user_timer_program
     lambda: |-
       if (data.size() != 238) {
@@ -55,7 +52,7 @@ sensor:
   - platform: modbus_controller
     id: blk4_user_timer_program_2
     name: "${prefixBlk4} User Timer Program 2 Data"
-    address: 0x0500
+    custom_pdu: [0x03, 0x05, 0x00, 0x00, 0x77]
     <<: *raw_user_timer_program
     lambda: |-
       if (data.size() != 238) {
@@ -75,7 +72,7 @@ sensor:
   - platform: modbus_controller
     id: blk4_user_timer_program_3
     name: "${prefixBlk4} User Timer Program 3 Data"
-    address: 0x0600
+    custom_pdu: [0x03, 0x06, 0x00, 0x00, 0x77]
     <<: *raw_user_timer_program
     lambda: |-
       if (data.size() != 238) {
@@ -95,7 +92,7 @@ sensor:
   - platform: modbus_controller
     id: blk4_user_timer_program_4
     name: "${prefixBlk4} User Timer Program 4 Data"
-    address: 0x0700
+    custom_pdu: [0x03, 0x07, 0x00, 0x00, 0x77]
     <<: *raw_user_timer_program
     lambda: |-
       if (data.size() != 238) {
